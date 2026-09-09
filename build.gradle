@@ -21,9 +21,16 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
     if (!project.hasProperty('visualCheck')) {
-        modRuntimeOnly files('../../mods/Cobblemon-fabric-1.7.3+1.21.1.jar')
+        def cobblemonRuntimeJar = providers.gradleProperty('cobblemon_runtime_jar').orNull
+        if (cobblemonRuntimeJar != null) {
+            def cobblemonFile = file(cobblemonRuntimeJar)
+            if (!cobblemonFile.isFile()) {
+                throw new GradleException("Cobblemon runtime JAR not found: ${cobblemonFile}")
+            }
+            modRuntimeOnly files(cobblemonFile)
+        }
+        modRuntimeOnly "net.fabricmc:fabric-language-kotlin:1.13.10+kotlin.2.3.20"
     }
-    modRuntimeOnly "net.fabricmc:fabric-language-kotlin:1.13.10+kotlin.2.3.20"
 }
 
 processResources {
@@ -35,6 +42,7 @@ processResources {
 
 tasks.withType(JavaCompile).configureEach {
     it.options.release = 21
+    it.options.encoding = 'UTF-8'
 }
 
 java {
@@ -47,6 +55,11 @@ jar {
     from('LICENSE') {
         rename { "${it}_${project.base.archivesName.get()}" }
     }
+}
+
+tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
 }
 
 // Optional isolated Minecraft renderer check; never included in the released JAR.

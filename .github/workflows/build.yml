@@ -1,0 +1,38 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v7
+
+      - name: Configurar o Java 21
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Configurar e validar o Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Compilar
+        run: ./gradlew clean build --stacktrace
+
+      - name: Guardar os JARs
+        uses: actions/upload-artifact@v6
+        with:
+          name: lucky-cobblemon-${{ github.sha }}
+          path: build/libs/lucky-cobblemon-*.jar
+          if-no-files-found: error

@@ -1,71 +1,153 @@
-# Lucky Cobblemon
+<p align="center">
+  <img src="docs/media/lucky-cobblemon-icon.png" alt="Ícone do Lucky Cobblemon" width="220">
+</p>
 
-Standalone lucky block mod for Fabric 1.21.1 and Cobblemon 1.7.3.
+<h1 align="center">Lucky Cobblemon</h1>
 
-## Natural generation (0.5.0)
+<p align="center"><strong>Quebre o bloco. Teste a sua sorte. Encontre a próxima surpresa.</strong></p>
 
-- Lucky Blocks generate on the Overworld surface, averaging one attempt every
-  48 chunks. Existing chunks are unchanged; explore new terrain to find them.
-- Every generated block stores independent luck. The distribution favors values
-  near zero, covers -90 through +90 in steps of five, and gives +100 and -100 a
-  special 2.5% chance each.
+<p align="center">
+  <img alt="Minecraft 1.21.1" src="https://img.shields.io/badge/Minecraft-1.21.1-62B47A?style=for-the-badge">
+  <img alt="Fabric" src="https://img.shields.io/badge/Loader-Fabric-DBD0B4?style=for-the-badge">
+  <img alt="Cobblemon 1.7.3 ou superior" src="https://img.shields.io/badge/Cobblemon-%E2%89%A51.7.3-E84D5B?style=for-the-badge">
+  <img alt="Java 21" src="https://img.shields.io/badge/Java-21-ED8B00?style=for-the-badge">
+  <img alt="Licença MIT" src="https://img.shields.io/badge/Licen%C3%A7a-MIT-45C2A5?style=for-the-badge">
+</p>
 
-## Gameplay
+---
 
-- Craft a Lucky Cobble Block with a dropper, four Poké Balls and four gold ingots.
-- Break it to roll a weighted Cobblemon-themed event.
-- Outcomes include Pokémon in six rarity pools, shiny jackpots, item bundles,
-  trio encounters, a small shrine and harmless unlucky effects.
-- Edit `config/luckycobblemon.json` after the first launch to tune weights,
-  levels and species pools.
+**Lucky Cobblemon** é um mod para Fabric que leva blocos da sorte ao universo do Cobblemon. Cada bloco guarda um valor próprio entre **−100 e +100** e, quando quebrado, escolhe um evento temático: encontros de Pokémon, itens, trios, santuários, Raid Dens, efeitos de azar ou um jackpot lendário shiny.
 
-## Build
+> [!IMPORTANT]
+> Este é um projeto independente e não oficial. **Cobblemon** e **Fabric API** são dependências obrigatórias. O mod deve ser instalado no servidor e nos clientes.
 
-Run `gradle build` with JDK 21. The remapped jar is written to `build/libs/`.
+## Visão geral
 
-## Per-block luck
+| | |
+| --- | --- |
+| 🎲 **Sorte por bloco** | Cada bloco preserva seu próprio valor, inclusive depois de ser colocado. |
+| 🌍 **Geração natural** | Novos chunks do mundo normal podem gerar Lucky Blocks na superfície. |
+| ✨ **Eventos temáticos** | Pokémon em seis raridades, shinies, suprimentos, trios e jackpot. |
+| 🛠️ **Configurável** | Pesos, níveis e listas de espécies ficam em um JSON simples. |
+| 🧭 **Servidor e single-player** | A lógica dos eventos roda no servidor e funciona em mundos locais. |
+| 🏛️ **Integração opcional** | Com Raid Dens instalado, um resultado pode criar um Raid Den real. |
 
-Each Lucky Cobble Block stores its own luck value from -100 to +100. Combine one
-block with one or more modifiers anywhere in a crafting grid. Positive blocks
-glint and their tooltip shows the stored value. Placing the block preserves it.
+## Compatibilidade
 
-| Modifier | Luck |
-| --- | ---: |
-| Iron ingot / block | +3 / +30 |
-| Gold ingot / block | +6 / +60 |
-| Emerald / block | +8 / +80 |
-| Diamond / block | +12 / +100 |
-| Golden apple / enchanted | +40 / +100 |
-| Nether star | +100 |
-| Rotten flesh | -5 |
-| Spider eye / fermented | -10 / -20 |
-| Poisonous potato | -10 |
-| Pufferfish | -20 |
+| Componente | Versão | Obrigatório |
+| --- | --- | :---: |
+| Minecraft: Java Edition | `1.21.1` | Sim |
+| Fabric Loader | `0.17.2` ou superior | Sim |
+| Fabric API | `0.116.6+1.21.1` ou superior | Sim |
+| Cobblemon | `1.7.3` ou superior | Sim |
+| Java | `21` ou superior | Sim |
+| Cobblemon Raid Dens | `0.11.7` ou superior | Não |
 
-## Raid and Pokemon structures
+## Instalação
 
-- A raid outcome replaces the broken Lucky Block with a real Raid Den from
-  Cobblemon Raid Dens. Interact with the Den when ready to start the battle.
-- Positive luck increases the raid outcome weight.
-- The only built-in structure outcome is a small Pokemon shrine, which always
-  summons an epic guardian and contains Cobblemon supplies.
-- Generic structures from unrelated mods are intentionally not generated.
+1. Instale o **Fabric Loader** para Minecraft `1.21.1`.
+2. Coloque **Fabric API**, **Cobblemon** e `lucky-cobblemon-0.5.0.jar` na pasta `mods`.
+3. Se quiser Raid Dens reais como resultado, adicione também **Cobblemon Raid Dens**.
+4. Inicie o jogo. O arquivo `config/luckycobblemon.json` será criado automaticamente.
 
-## Visual update (0.4.0)
+Em multiplayer, use as mesmas versões do mod e das dependências no servidor e em todos os clientes.
 
-- Compact stepped shell in cherry enamel, porcelain and champagne gold, with
-  raised question-mark medallions on all four sides.
-- Nine dedicated 32px pixel materials; mint inlays breathe over a 3.2-second
-  interpolated texture animation in the world, hand and inventory.
-- Separate first-person, third-person, ground and GUI transforms. First-person
-  scale is 0.42; third-person is 0.36, instead of the old untransformed full cube.
-- Outline/collision fits the smaller capsule. Sparse client-side sparkles use
-  vanilla display ticks without a block-entity animation ticker.
-- Geometry and materials are authored by `scripts/generate-visuals.mjs`.
-  Run `node scripts/preview-visuals.mjs` for an orthographic asset preview.
-- Run `gradle runClient -PvisualCheck` to bake the actual models in an isolated
-  Minecraft client, capture two renderer frames in `visual-run/screenshots`,
-  and close automatically. The check mod is not included in the release JAR.
-  This visual-only run omits Cobblemon because its Kotlin reflection uses
-  production names; the dependency override is confined to `visual-run/config`.
-  It verifies graphics, not raid battles or the full modpack.
+## Receita do bloco
+
+Na bancada, combine quatro barras de ouro, quatro Poké Bolas e um ejetor:
+
+```text
+O P O
+P E P
+O P O
+
+O = Barra de ouro
+P = Poké Bola
+E = Ejetor
+```
+
+## Sistema de sorte
+
+Combine um Lucky Block com um ou mais modificadores em qualquer posição da grade. O resultado é limitado a `−100` e `+100`. Blocos positivos recebem brilho e o valor aparece na descrição do item.
+
+| Modificador | Sorte | Modificador | Sorte |
+| --- | ---: | --- | ---: |
+| Barra de ferro | +3 | Carne podre | −5 |
+| Bloco de ferro | +30 | Olho de aranha | −10 |
+| Barra de ouro | +6 | Olho de aranha fermentado | −20 |
+| Bloco de ouro | +60 | Batata venenosa | −10 |
+| Esmeralda | +8 | Baiacu | −20 |
+| Bloco de esmeralda | +80 |  |  |
+| Diamante | +12 |  |  |
+| Bloco de diamante | +100 |  |  |
+| Maçã dourada | +40 |  |  |
+| Maçã dourada encantada | +100 |  |  |
+| Estrela do Nether | +100 |  |  |
+
+A sorte positiva reduz resultados comuns e aumenta as chances relativas de raros, épicos, Raid Dens, míticos e lendários. A sorte negativa aumenta o peso dos eventos de azar.
+
+## Possíveis resultados
+
+- Pokémon comuns, incomuns, raros, épicos, míticos e lendários;
+- chance de shiny em resultados especiais;
+- pacotes de Poké Bolas e Doces Raros;
+- encontro com três Pokémon;
+- Santuário da Sorte com guardião e suprimentos;
+- Raid Den real quando o mod opcional está disponível;
+- efeitos de azar inofensivos, como cegueira temporária ou batatas venenosas;
+- jackpot lendário shiny acompanhado de uma Master Ball.
+
+Sem Cobblemon Raid Dens, o evento correspondente vira diretamente um encontro raro. Nenhum comando inexistente é executado e nenhum aviso de erro é gerado. Se a criação de um Pokémon ou Raid Den falhar por outro motivo, o mod entrega uma recompensa alternativa.
+
+## Geração natural
+
+O Lucky Block pode aparecer na superfície do mundo normal. Há, em média, **uma tentativa a cada 48 chunks**; isso não garante um bloco em cada intervalo. Somente chunks gerados depois da instalação recebem essa geração.
+
+Cada bloco natural nasce com sorte independente:
+
+- valores de `−90` a `+90`, em passos de 5, favorecendo valores próximos de zero;
+- `2,5%` de chance de receber `+100`;
+- `2,5%` de chance de receber `−100`.
+
+## Configuração
+
+Depois da primeira inicialização, edite `config/luckycobblemon.json`. É possível ajustar os pesos dos eventos, níveis mínimos e máximos e as listas de espécies de cada raridade.
+
+Se o arquivo ficar inválido, o mod salva uma cópia com o sufixo `.invalid-<timestamp>` e restaura os valores padrão.
+
+> [!TIP]
+> Faça uma cópia antes de alterar os pesos e reinicie o jogo ou servidor para aplicar a nova configuração.
+
+## Para desenvolvedores
+
+Requisito: **JDK 21**. O projeto inclui o Gradle Wrapper, então não é necessário instalar Gradle globalmente.
+
+```bash
+./gradlew build
+```
+
+No Windows:
+
+```powershell
+.\gradlew.bat build
+```
+
+O JAR de distribuição será criado em `build/libs/lucky-cobblemon-0.5.0.jar`. O arquivo com `-sources` contém apenas o código-fonte e não deve ser instalado nem enviado como arquivo principal ao CurseForge.
+
+Para abrir um cliente de desenvolvimento completo, informe o JAR local do Cobblemon:
+
+```powershell
+.\gradlew.bat runClient -Pcobblemon_runtime_jar="C:\caminho\Cobblemon-fabric-1.7.3+1.21.1.jar"
+```
+
+## Lançamentos
+
+- [Histórico de alterações](CHANGELOG.md)
+- [Material do CurseForge](docs/CURSEFORGE.md)
+- [Código-fonte e problemas](https://github.com/Pexe171/LuckyCobblemon)
+
+## Licença e créditos
+
+Distribuído sob a licença [MIT](LICENSE). Criado por **Pexe171**.
+
+Lucky Cobblemon é um add-on comunitário independente. Minecraft e Pokémon são marcas de seus respectivos proprietários. Cobblemon e Cobblemon Raid Dens pertencem aos seus respectivos autores; este projeto não é afiliado nem endossado por eles.

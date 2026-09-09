@@ -2,6 +2,7 @@ package br.com.ikezn.luckycobblemon;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.List;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -127,6 +128,12 @@ public final class LuckyEffects {
     }
 
     private static void raidDen(ServerWorld world, ServerPlayerEntity player, BlockPos pos, Random random, LuckyConfig config) {
+        if (!FabricLoader.getInstance().isModLoaded("cobblemonraiddens")) {
+            player.sendMessage(Text.literal("Raid Dens não está instalado: um Pokémon raro apareceu no lugar!").formatted(Formatting.YELLOW), false);
+            pokemon(world, player, pos, random, config.rareSpecies, config.rareMinLevel, config.rareMaxLevel, false, "Raro", Formatting.BLUE);
+            return;
+        }
+
         String command = "crd dens " + pos.getX() + " " + pos.getY() + " " + pos.getZ() + " random";
         int result;
         try {

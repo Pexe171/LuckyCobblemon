@@ -1,0 +1,95 @@
+name: Publicar no CurseForge
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: Tipo do arquivo no CurseForge
+        required: true
+        default: release
+        type: choice
+        options:
+          - release
+          - beta
+          - alpha
+
+permissions:
+  contents: read
+
+env:
+  CURSEFORGE_PROJECT_ID: '1689137'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v7
+
+      - name: Configurar o Java 21
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Configurar e validar o Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Verificar o token
+        env:
+          CURSEFORGE_API_TOKEN: ${{ secrets.CURSEFORGE_API_TOKEN }}
+        run: |
+          if [ -z "$CURSEFORGE_API_TOKEN" ]; then
+            echo "Adicione CURSEFORGE_API_TOKEN em Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+
+      - name: Compilar o lançamento
+        run: ./gradlew clean build --stacktrace
+
+      - name: Enviar para o CurseForge
+        env:
+          CURSEFORGE_API_TOKEN: ${{ secrets.CURSEFORGE_API_TOKEN }}
+          RELEASE_TYPE: ${{ github.event.inputs.release_type || 'release' }}
+        run: |
+          VERSION="$(sed -n 's/^mod_version=//p' gradle.properties)"
+          JAR="build/libs/lucky-cobblemon-${VERSION}.jar"
+          test -f "$JAR"
+
+          jq -n \
+            --rawfile changelog docs/curseforge-changelog.md \
+            --arg displayName "Lucky Cobblemon ${VERSION}" \
+            --arg releaseType "$RELEASE_TYPE" \
+            '{
+              changelog: $changelog,
+              changelogType: "markdown",
+              displayName: $displayName,
+              gameVersionNames: ["1.21.1", "Fabric", "Java 21", "Client", "Server"],
+              releaseType: $releaseType,
+              relations: {
+                projects: [
+                  {projectID: "306612", type: "requiredDependency"},
+                  {projectID: "687131", type: "requiredDependency"},
+                  {projectID: "1349231", type: "optionalDependency"}
+                ]
+              }
+            }' > "$RUNNER_TEMP/curseforge-metadata.json"
+
+          RESPONSE="$(curl --fail-with-body \
+            -H "X-Api-Token: $CURSEFORGE_API_TOKEN" \
+            -F "metadata=@$RUNNER_TEMP/curseforge-metadata.json;type=application/json" \
+            -F "file=@$JAR;type=application/java-archive" \
+            "https://minecraft.curseforge.com/api/projects/${CURSEFORGE_PROJECT_ID}/upload-file")"
+
+          FILE_ID="$(printf '%s' "$RESPONSE" | jq -r '.id')"
+          test "$FILE_ID" != "null"
+          echo "Arquivo enviado ao CurseForge com ID $FILE_ID."
+
+      - name: Guardar o JAR publicado
+        uses: actions/upload-artifact@v6
+        with:
+          name: curseforge-${{ env.CURSEFORGE_PROJECT_ID }}
+          path: build/libs/lucky-cobblemon-*.jar
+          if-no-files-found: error

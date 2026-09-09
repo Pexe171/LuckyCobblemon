@@ -3,10 +3,15 @@
   "id": "luckycobblemon",
   "version": "${version}",
   "name": "Lucky Cobblemon",
-  "description": "Lucky Blocks com surpresas, Pokémon e jackpots para Cobblemon.",
-  "authors": ["ikezn", "Codex"],
-  "contact": {},
+  "description": "Blocos da sorte com encontros, recompensas, azar e jackpots temáticos para Cobblemon.",
+  "authors": ["Pexe171"],
+  "contact": {
+    "homepage": "https://github.com/Pexe171/LuckyCobblemon",
+    "issues": "https://github.com/Pexe171/LuckyCobblemon/issues",
+    "sources": "https://github.com/Pexe171/LuckyCobblemon"
+  },
   "license": "MIT",
+  "icon": "assets/luckycobblemon/icon.png",
   "environment": "*",
   "entrypoints": {
     "main": ["br.com.ikezn.luckycobblemon.LuckyCobblemonMod"]
