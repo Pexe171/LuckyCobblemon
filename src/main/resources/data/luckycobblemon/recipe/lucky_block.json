@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GPG",
+    "PDP",
+    "GPG"
+  ],
+  "key": {
+    "G": { "item": "minecraft:gold_ingot" },
+    "P": { "item": "cobblemon:poke_ball" },
+    "D": { "item": "minecraft:dropper" }
+  },
+  "result": {
+    "id": "luckycobblemon:lucky_block",
+    "count": 1
+  }
+}

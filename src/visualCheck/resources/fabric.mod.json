@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "id": "luckyvisualcheck",
+  "version": "1.0.0",
+  "name": "Lucky Cobblemon isolated renderer check",
+  "environment": "client",
+  "entrypoints": { "client": ["br.com.ikezn.luckycobblemon.check.VisualCheck"] },
+  "depends": { "luckycobblemon": "*", "fabric-api": "*" }
+}
