@@ -15,6 +15,8 @@ public final class LuckyConfig {
     private static final int MAX_WEIGHT = 1_000_000;
 
     public boolean allowCreativeActivation = false;
+    public boolean eventLogging = true;
+    public int maxLogFiles = 20;
 
     public int commonWeight = 32;
     public int uncommonWeight = 23;
@@ -115,6 +117,9 @@ public final class LuckyConfig {
     }
 
     public void validate(boolean validateSpecies) {
+        if (maxLogFiles < 1 || maxLogFiles > 100) {
+            throw new IllegalArgumentException("maxLogFiles must stay between 1 and 100");
+        }
         if (!validWeights() || totalWeightLong() <= 0) {
             throw new IllegalArgumentException("event weights must be between 0 and " + MAX_WEIGHT + " and total more than 0");
         }

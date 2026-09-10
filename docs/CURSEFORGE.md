@@ -41,6 +41,7 @@ Lucky Cobblemon is a Fabric mod that adds craftable and naturally generated Luck
 - In-game probability viewer for the Lucky Block in your main hand
 - Safe configuration reload command for server operators
 - Creative-mode activation disabled by default
+- Dedicated per-session playtest logs with automatic retention
 
 ## 🎲 Luck System
 
@@ -60,9 +61,9 @@ Install the mod and its required dependencies on both the server and every conne
 
 ## ⚙️ Configuration
 
-Edit `config/luckycobblemon.json` after the first launch to customize event weights, level ranges, species pools and Creative-mode activation. Invalid configurations are automatically backed up before defaults are restored.
+Edit `config/luckycobblemon.json` after the first launch to customize event weights, level ranges, species pools, Creative-mode activation and playtest logging. Invalid configurations are automatically backed up before defaults are restored.
 
-Use `/luckycobblemon chances` while holding a Lucky Block to inspect its exact outcome chances. Server operators can use `/luckycobblemon reload` to validate and apply configuration changes without restarting.
+Use `/luckycobblemon chances` while holding a Lucky Block to inspect its exact outcome chances. Use `/luckycobblemon logs` to display the dedicated log file for the current session. Server operators can use `/luckycobblemon reload` to validate and apply configuration changes without restarting.
 
 ## 🔗 Links
 
@@ -82,7 +83,7 @@ Lucky Cobblemon is an independent, unofficial community add-on and is not affili
 
 ## Arquivo a enviar
 
-Envie `build/libs/lucky-cobblemon-0.6.0.jar`. Não envie o JAR `-sources` como arquivo principal.
+Envie `build/libs/lucky-cobblemon-0.6.1.jar`. Não envie o JAR `-sources` como arquivo principal.
 
 ## Automação
 
@@ -101,5 +102,6 @@ O workflow `.github/workflows/curseforge.yml` compila e envia o JAR pela API ofi
 - [ ] Confirmar que o modo Criativo não ativa eventos por padrão.
 - [ ] Testar as quatro variantes e suas receitas.
 - [ ] Conferir os 15 novos eventos e variações.
-- [ ] Criar a tag e a GitHub Release `v0.6.0`.
+- [ ] Executar o roteiro em `docs/ROTEIRO-DE-TESTES.md` e guardar o log da sessão.
+- [ ] Criar a tag e a GitHub Release `v0.6.1`.
 - [ ] Conferir o arquivo no painel do CurseForge após o upload.

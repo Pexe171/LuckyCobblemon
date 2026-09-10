@@ -44,6 +44,8 @@
   "message.luckycobblemon.creative_disabled": "Eventos estão desativados no modo Criativo.",
   "command.luckycobblemon.reload.success": "Configuração do Lucky Cobblemon recarregada.",
   "command.luckycobblemon.reload.failure": "Configuração inválida; a anterior continua ativa: %s",
+  "command.luckycobblemon.logs.path": "Log desta sessão: %s",
+  "command.luckycobblemon.logs.disabled": "O registro de eventos está desativado na configuração.",
   "command.luckycobblemon.chances.no_block": "Segure um Bloco da Sorte Cobblemon na mão principal.",
   "command.luckycobblemon.chances.header": "Chances do bloco com sorte %s:",
   "command.luckycobblemon.chances.line": "• %1$s: %2$s",

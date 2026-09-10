@@ -44,6 +44,8 @@
   "message.luckycobblemon.creative_disabled": "Events are disabled in Creative mode.",
   "command.luckycobblemon.reload.success": "Lucky Cobblemon configuration reloaded.",
   "command.luckycobblemon.reload.failure": "Invalid configuration; the previous one remains active: %s",
+  "command.luckycobblemon.logs.path": "Current session log: %s",
+  "command.luckycobblemon.logs.disabled": "Event logging is disabled in the configuration.",
   "command.luckycobblemon.chances.no_block": "Hold a Cobblemon Lucky Block in your main hand.",
   "command.luckycobblemon.chances.header": "Chances for the block with %s luck:",
   "command.luckycobblemon.chances.line": "• %1$s: %2$s",

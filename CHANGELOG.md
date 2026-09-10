@@ -2,6 +2,15 @@
 
 Todas as mudanças relevantes do Lucky Cobblemon são registradas neste arquivo.
 
+## [0.6.1] — 2026-09-10
+
+### Adicionado
+
+- Um log dedicado por sessão em `logs/luckycobblemon`, com variante, sorte, jogador, local, categoria e detalhes do resultado.
+- Comando `/luckycobblemon logs` para mostrar o arquivo atual.
+- Opções `eventLogging` e `maxLogFiles`, com limpeza automática dos arquivos mais antigos.
+- Roteiro PT-BR para testes manuais em uma instalação real do Cobblemon.
+
 ## [0.6.0] — 2026-09-09
 
 ### Adicionado
@@ -59,6 +68,7 @@ Todas as mudanças relevantes do Lucky Cobblemon são registradas neste arquivo.
 - Transformações próprias para mãos, chão e inventário.
 - Contorno e colisão ajustados ao novo formato.
 
+[0.6.1]: https://github.com/Pexe171/LuckyCobblemon/releases/tag/v0.6.1
 [0.6.0]: https://github.com/Pexe171/LuckyCobblemon/releases/tag/v0.6.0
 [0.5.1]: https://github.com/Pexe171/LuckyCobblemon/releases/tag/v0.5.1
 [0.5.0]: https://github.com/Pexe171/LuckyCobblemon/releases/tag/v0.5.0

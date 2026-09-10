@@ -27,34 +27,70 @@ public final class LuckyEffects {
     private LuckyEffects() {
     }
 
-    public static void roll(ServerWorld world, ServerPlayerEntity player, BlockPos pos, LuckyConfig config, int luck) {
+    public static void roll(
+        ServerWorld world,
+        ServerPlayerEntity player,
+        BlockPos pos,
+        LuckyConfig config,
+        int luck,
+        String blockId
+    ) {
         Random random = world.getRandom();
         AdjustedWeights weights = AdjustedWeights.forLuck(config, luck);
         int roll = random.nextInt(weights.total());
+        String category;
 
         if ((roll -= weights.common()) < 0) {
-            pokemon(world, player, pos, random, config.commonSpecies, config.commonMinLevel, config.commonMaxLevel, false, "outcome.luckycobblemon.common", Formatting.GREEN);
+            category = "common";
         } else if ((roll -= weights.uncommon()) < 0) {
-            pokemon(world, player, pos, random, config.uncommonSpecies, config.uncommonMinLevel, config.uncommonMaxLevel, false, "outcome.luckycobblemon.uncommon", Formatting.AQUA);
+            category = "uncommon";
         } else if ((roll -= weights.rare()) < 0) {
-            pokemon(world, player, pos, random, config.rareSpecies, config.rareMinLevel, config.rareMaxLevel, false, "outcome.luckycobblemon.rare", Formatting.BLUE);
+            category = "rare";
         } else if ((roll -= weights.itemBundle()) < 0) {
-            itemBundle(world, player, pos, random, luck);
+            category = "supplies";
         } else if ((roll -= weights.epic()) < 0) {
-            pokemon(world, player, pos, random, config.epicSpecies, config.epicMinLevel, config.epicMaxLevel, random.nextInt(20) == 0, "outcome.luckycobblemon.epic", Formatting.LIGHT_PURPLE);
+            category = "epic";
         } else if ((roll -= weights.raid()) < 0) {
-            raidDen(world, player, pos, random, config);
+            category = "raid";
         } else if ((roll -= weights.trio()) < 0) {
-            trio(world, player, pos, random, config);
+            category = "group";
         } else if ((roll -= weights.shrine()) < 0) {
-            shrine(world, player, pos, random, config);
+            category = "shrine";
         } else if ((roll -= weights.mythical()) < 0) {
-            pokemon(world, player, pos, random, config.mythicalSpecies, config.mythicalMinLevel, config.mythicalMaxLevel, random.nextInt(10) == 0, "outcome.luckycobblemon.mythical", Formatting.GOLD);
+            category = "mythical";
         } else if ((roll -= weights.unlucky()) < 0) {
-            unlucky(world, player, pos, random);
+            category = "unlucky";
         } else {
-            pokemon(world, player, pos, random, config.legendarySpecies, config.legendaryMinLevel, config.legendaryMaxLevel, true, "outcome.luckycobblemon.legendary", Formatting.GOLD);
-            drop(world, pos, resolveCobblemonItem("master_ball", Items.DIAMOND), 1);
+            category = "legendary_jackpot";
+        }
+
+        long rollId = LuckySessionLogger.recordRoll(
+            player.getGameProfile().getName(),
+            player.getUuidAsString(),
+            world.getRegistryKey().getValue().toString(),
+            pos.getX(),
+            pos.getY(),
+            pos.getZ(),
+            blockId,
+            luck,
+            category
+        );
+        switch (category) {
+            case "common" -> pokemon(world, player, pos, random, config.commonSpecies, config.commonMinLevel, config.commonMaxLevel, false, "outcome.luckycobblemon.common", Formatting.GREEN, rollId);
+            case "uncommon" -> pokemon(world, player, pos, random, config.uncommonSpecies, config.uncommonMinLevel, config.uncommonMaxLevel, false, "outcome.luckycobblemon.uncommon", Formatting.AQUA, rollId);
+            case "rare" -> pokemon(world, player, pos, random, config.rareSpecies, config.rareMinLevel, config.rareMaxLevel, false, "outcome.luckycobblemon.rare", Formatting.BLUE, rollId);
+            case "supplies" -> itemBundle(world, player, pos, random, luck, rollId);
+            case "epic" -> pokemon(world, player, pos, random, config.epicSpecies, config.epicMinLevel, config.epicMaxLevel, random.nextInt(20) == 0, "outcome.luckycobblemon.epic", Formatting.LIGHT_PURPLE, rollId);
+            case "raid" -> raidDen(world, player, pos, random, config, rollId);
+            case "group" -> trio(world, player, pos, random, config, rollId);
+            case "shrine" -> shrine(world, player, pos, random, config, rollId);
+            case "mythical" -> pokemon(world, player, pos, random, config.mythicalSpecies, config.mythicalMinLevel, config.mythicalMaxLevel, random.nextInt(10) == 0, "outcome.luckycobblemon.mythical", Formatting.GOLD, rollId);
+            case "unlucky" -> unlucky(world, player, pos, random, rollId);
+            case "legendary_jackpot" -> {
+                pokemon(world, player, pos, random, config.legendarySpecies, config.legendaryMinLevel, config.legendaryMaxLevel, true, "outcome.luckycobblemon.legendary", Formatting.GOLD, rollId);
+                drop(world, pos, resolveCobblemonItem("master_ball", Items.DIAMOND), 1);
+            }
+            default -> throw new IllegalStateException("Unexpected Lucky Cobblemon category: " + category);
         }
 
         String luckLabel = luck > 0 ? "+" + luck : Integer.toString(luck);
@@ -73,7 +109,8 @@ public final class LuckyEffects {
         int maxLevel,
         boolean shiny,
         String tierTranslationKey,
-        Formatting color
+        Formatting color,
+        long rollId
     ) {
         String selected = species.get(random.nextInt(species.size()));
         int level = between(random, minLevel, maxLevel);
@@ -90,34 +127,39 @@ public final class LuckyEffects {
         }
 
         if (result > 0) {
+            LuckySessionLogger.recordResult(rollId, "pokemon_spawn", selected + " level=" + level + " shiny=" + shiny, true);
             String displayName = selected.replace('-', ' ');
             player.sendMessage(Text.translatable("message.luckycobblemon.pokemon",
                 Text.translatable(tierTranslationKey), displayName, level,
                 shiny ? Text.translatable("message.luckycobblemon.shiny") : Text.empty()
             ).formatted(color, Formatting.BOLD), false);
         } else {
+            LuckySessionLogger.recordResult(rollId, "pokemon_fallback", selected + " level=" + level + " shiny=" + shiny, false);
             LuckyCobblemonMod.LOGGER.warn("Cobblemon command failed: {}", command);
             player.sendMessage(Text.translatable("message.luckycobblemon.pokemon_fallback").formatted(Formatting.YELLOW), false);
             drop(world, pos, resolveCobblemonItem("rare_candy", Items.EMERALD), 3);
         }
     }
 
-    private static void itemBundle(ServerWorld world, ServerPlayerEntity player, BlockPos pos, Random random, int luck) {
+    private static void itemBundle(ServerWorld world, ServerPlayerEntity player, BlockPos pos, Random random, int luck, long rollId) {
         switch (random.nextInt(7)) {
-            case 0 -> ballBundle(world, player, pos, random, luck);
+            case 0 -> ballBundle(world, player, pos, random, luck, rollId);
             case 1 -> {
+                LuckySessionLogger.recordResult(rollId, "supplies", "apricorn_harvest", true);
                 drop(world, pos, resolveCobblemonItem("red_apricorn", Items.APPLE), between(random, 6, 14));
                 drop(world, pos, resolveCobblemonItem("blue_apricorn", Items.SWEET_BERRIES), between(random, 6, 14));
                 drop(world, pos, resolveCobblemonItem("yellow_apricorn", Items.GLOW_BERRIES), between(random, 6, 14));
                 player.sendMessage(Text.translatable("message.luckycobblemon.apricorn_harvest").formatted(Formatting.RED), false);
             }
             case 2 -> {
+                LuckySessionLogger.recordResult(rollId, "supplies", "berry_picnic", true);
                 drop(world, pos, resolveCobblemonItem("oran_berry", Items.SWEET_BERRIES), between(random, 4, 10));
                 drop(world, pos, resolveCobblemonItem("sitrus_berry", Items.GLOW_BERRIES), between(random, 2, 6));
                 drop(world, pos, resolveCobblemonItem("lum_berry", Items.GOLDEN_CARROT), between(random, 1, 3));
                 player.sendMessage(Text.translatable("message.luckycobblemon.berry_picnic").formatted(Formatting.GREEN), false);
             }
             case 3 -> {
+                LuckySessionLogger.recordResult(rollId, "supplies", "evolution_cache", true);
                 Item[] stones = {
                     resolveCobblemonItem("fire_stone", Items.BLAZE_POWDER),
                     resolveCobblemonItem("water_stone", Items.PRISMARINE_CRYSTALS),
@@ -128,18 +170,21 @@ public final class LuckyEffects {
                 player.sendMessage(Text.translatable("message.luckycobblemon.evolution_cache").formatted(Formatting.LIGHT_PURPLE), false);
             }
             case 4 -> {
+                LuckySessionLogger.recordResult(rollId, "supplies", "medicine_kit", true);
                 drop(world, pos, resolveCobblemonItem("potion", Items.HONEY_BOTTLE), between(random, 3, 7));
                 drop(world, pos, resolveCobblemonItem("revive", Items.GOLDEN_APPLE), between(random, 1, 3));
                 player.addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION, 200, 1));
                 player.sendMessage(Text.translatable("message.luckycobblemon.medicine_kit").formatted(Formatting.RED), false);
             }
             case 5 -> {
+                LuckySessionLogger.recordResult(rollId, "supplies", "mineral_cache", true);
                 drop(world, pos, Items.DIAMOND, between(random, 1, 4));
                 drop(world, pos, Items.EMERALD, between(random, 3, 8));
                 drop(world, pos, Items.GOLD_INGOT, between(random, 5, 12));
                 player.sendMessage(Text.translatable("message.luckycobblemon.mineral_cache").formatted(Formatting.GOLD), false);
             }
             case 6 -> {
+                LuckySessionLogger.recordResult(rollId, "supplies", "fossil_cache", true);
                 drop(world, pos, resolveCobblemonItem("fossilized_bird", Items.BONE), between(random, 1, 2));
                 drop(world, pos, resolveCobblemonItem("fossilized_fish", Items.NAUTILUS_SHELL), between(random, 1, 2));
                 player.sendMessage(Text.translatable("message.luckycobblemon.fossil_cache").formatted(Formatting.GRAY), false);
@@ -148,7 +193,7 @@ public final class LuckyEffects {
         }
     }
 
-    private static void ballBundle(ServerWorld world, ServerPlayerEntity player, BlockPos pos, Random random, int luck) {
+    private static void ballBundle(ServerWorld world, ServerPlayerEntity player, BlockPos pos, Random random, int luck, long rollId) {
         Item ball;
         int count;
         int quality = Math.max(0, random.nextInt(100) - Math.max(0, luck) / 4);
@@ -165,33 +210,38 @@ public final class LuckyEffects {
             ball = resolveCobblemonItem("poke_ball", Items.REDSTONE);
             count = between(random, 8, 20);
         }
+        LuckySessionLogger.recordResult(rollId, "supplies", "ball_bundle item=" + Registries.ITEM.getId(ball) + " count=" + count, true);
         drop(world, pos, ball, count);
         drop(world, pos, resolveCobblemonItem("rare_candy", Items.EXPERIENCE_BOTTLE), between(random, 1, 4));
         player.sendMessage(Text.translatable("message.luckycobblemon.item_bundle").formatted(Formatting.AQUA), false);
     }
 
-    private static void trio(ServerWorld world, ServerPlayerEntity player, BlockPos pos, Random random, LuckyConfig config) {
+    private static void trio(ServerWorld world, ServerPlayerEntity player, BlockPos pos, Random random, LuckyConfig config, long rollId) {
         switch (random.nextInt(4)) {
             case 0 -> {
+                LuckySessionLogger.recordResult(rollId, "group", "epic_trio", true);
                 player.sendMessage(Text.translatable("message.luckycobblemon.trio").formatted(Formatting.LIGHT_PURPLE, Formatting.BOLD), false);
                 for (int index = 0; index < 3; index++) {
-                    pokemon(world, player, pos, random, config.epicSpecies, 35, 55, false, "outcome.luckycobblemon.trio", Formatting.LIGHT_PURPLE);
+                    pokemon(world, player, pos, random, config.epicSpecies, 35, 55, false, "outcome.luckycobblemon.trio", Formatting.LIGHT_PURPLE, rollId);
                 }
             }
             case 1 -> {
+                LuckySessionLogger.recordResult(rollId, "group", "common_swarm", true);
                 player.sendMessage(Text.translatable("message.luckycobblemon.common_swarm").formatted(Formatting.GREEN, Formatting.BOLD), false);
                 for (int index = 0; index < 5; index++) {
-                    pokemon(world, player, pos, random, config.commonSpecies, 10, 25, false, "message.luckycobblemon.swarm_member", Formatting.GREEN);
+                    pokemon(world, player, pos, random, config.commonSpecies, 10, 25, false, "message.luckycobblemon.swarm_member", Formatting.GREEN, rollId);
                 }
             }
             case 2 -> {
+                LuckySessionLogger.recordResult(rollId, "group", "rare_duo", true);
                 player.sendMessage(Text.translatable("message.luckycobblemon.rare_duo").formatted(Formatting.BLUE, Formatting.BOLD), false);
                 for (int index = 0; index < 2; index++) {
                     pokemon(world, player, pos, random, config.rareSpecies, config.rareMinLevel, config.rareMaxLevel, false,
-                        "message.luckycobblemon.duo_member", Formatting.BLUE);
+                        "message.luckycobblemon.duo_member", Formatting.BLUE, rollId);
                 }
             }
             case 3 -> {
+                LuckySessionLogger.recordResult(rollId, "group", "starter_parade", true);
                 player.sendMessage(Text.translatable("message.luckycobblemon.starter_parade").formatted(Formatting.GOLD, Formatting.BOLD), false);
                 List<String> starters = List.of(
                     "bulbasaur", "charmander", "squirtle", "chikorita", "cyndaquil", "totodile",
@@ -202,17 +252,18 @@ public final class LuckyEffects {
                 );
                 for (int index = 0; index < 3; index++) {
                     pokemon(world, player, pos, random, starters, 15, 30, false,
-                        "message.luckycobblemon.starter", Formatting.GOLD);
+                        "message.luckycobblemon.starter", Formatting.GOLD, rollId);
                 }
             }
             default -> throw new IllegalStateException("Unexpected group encounter");
         }
     }
 
-    private static void raidDen(ServerWorld world, ServerPlayerEntity player, BlockPos pos, Random random, LuckyConfig config) {
+    private static void raidDen(ServerWorld world, ServerPlayerEntity player, BlockPos pos, Random random, LuckyConfig config, long rollId) {
         if (!FabricLoader.getInstance().isModLoaded("cobblemonraiddens")) {
+            LuckySessionLogger.recordResult(rollId, "raid_fallback", "cobblemonraiddens_not_installed", true);
             player.sendMessage(Text.translatable("message.luckycobblemon.raid_missing").formatted(Formatting.YELLOW), false);
-            pokemon(world, player, pos, random, config.rareSpecies, config.rareMinLevel, config.rareMaxLevel, false, "outcome.luckycobblemon.rare", Formatting.BLUE);
+            pokemon(world, player, pos, random, config.rareSpecies, config.rareMinLevel, config.rareMaxLevel, false, "outcome.luckycobblemon.rare", Formatting.BLUE, rollId);
             return;
         }
 
@@ -229,22 +280,24 @@ public final class LuckyEffects {
         }
 
         if (result > 0) {
+            LuckySessionLogger.recordResult(rollId, "raid_den", "command_completed", true);
             player.sendMessage(Text.translatable("message.luckycobblemon.raid_success").formatted(Formatting.RED, Formatting.BOLD), false);
             world.spawnParticles(ParticleTypes.FLAME, pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5, 45, 0.65, 0.8, 0.65, 0.04);
         } else {
+            LuckySessionLogger.recordResult(rollId, "raid_fallback", "command_failed", false);
             player.sendMessage(Text.translatable("message.luckycobblemon.raid_fallback").formatted(Formatting.YELLOW), false);
-            pokemon(world, player, pos, random, config.rareSpecies, config.rareMinLevel, config.rareMaxLevel, false, "outcome.luckycobblemon.rare", Formatting.BLUE);
+            pokemon(world, player, pos, random, config.rareSpecies, config.rareMinLevel, config.rareMaxLevel, false, "outcome.luckycobblemon.rare", Formatting.BLUE, rollId);
         }
     }
 
-    private static void shrine(ServerWorld world, ServerPlayerEntity player, BlockPos pos, Random random, LuckyConfig config) {
+    private static void shrine(ServerWorld world, ServerPlayerEntity player, BlockPos pos, Random random, LuckyConfig config, long rollId) {
         int shrineType = random.nextInt(3);
         if (shrineType == 1) {
-            crystalAltar(world, player, pos, random, config);
+            crystalAltar(world, player, pos, random, config, rollId);
             return;
         }
         if (shrineType == 2) {
-            healingGarden(world, player, pos, random);
+            healingGarden(world, player, pos, random, rollId);
             return;
         }
 
@@ -266,11 +319,12 @@ public final class LuckyEffects {
                 chest.setStack(14, new ItemStack(Items.DIAMOND, between(random, 2, 5)));
             }
         }
-        pokemon(world, player, pos.up(), random, config.epicSpecies, config.epicMinLevel, config.epicMaxLevel, false, "message.luckycobblemon.shrine_guardian", Formatting.LIGHT_PURPLE);
+        LuckySessionLogger.recordResult(rollId, "shrine", "lucky_shrine", true);
+        pokemon(world, player, pos.up(), random, config.epicSpecies, config.epicMinLevel, config.epicMaxLevel, false, "message.luckycobblemon.shrine_guardian", Formatting.LIGHT_PURPLE, rollId);
         player.sendMessage(Text.translatable("message.luckycobblemon.shrine").formatted(Formatting.GOLD, Formatting.BOLD), false);
     }
 
-    private static void crystalAltar(ServerWorld world, ServerPlayerEntity player, BlockPos pos, Random random, LuckyConfig config) {
+    private static void crystalAltar(ServerWorld world, ServerPlayerEntity player, BlockPos pos, Random random, LuckyConfig config, long rollId) {
         for (int x = -2; x <= 2; x++) {
             for (int z = -2; z <= 2; z++) {
                 if (Math.abs(x) == 2 && Math.abs(z) == 2) {
@@ -283,14 +337,16 @@ public final class LuckyEffects {
         }
         drop(world, pos, Items.AMETHYST_SHARD, between(random, 8, 20));
         drop(world, pos, resolveCobblemonItem("rare_candy", Items.EXPERIENCE_BOTTLE), between(random, 2, 5));
+        LuckySessionLogger.recordResult(rollId, "shrine", "crystal_altar", true);
         pokemon(world, player, pos.up(), random, config.rareSpecies, config.rareMinLevel, config.rareMaxLevel,
-            random.nextInt(20) == 0, "message.luckycobblemon.crystal_guardian", Formatting.AQUA);
+            random.nextInt(20) == 0, "message.luckycobblemon.crystal_guardian", Formatting.AQUA, rollId);
         world.spawnParticles(ParticleTypes.END_ROD, pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5,
             60, 1.5, 0.8, 1.5, 0.03);
         player.sendMessage(Text.translatable("message.luckycobblemon.crystal_altar").formatted(Formatting.AQUA, Formatting.BOLD), false);
     }
 
-    private static void healingGarden(ServerWorld world, ServerPlayerEntity player, BlockPos pos, Random random) {
+    private static void healingGarden(ServerWorld world, ServerPlayerEntity player, BlockPos pos, Random random, long rollId) {
+        LuckySessionLogger.recordResult(rollId, "shrine", "healing_garden", true);
         Block[] flowers = {Blocks.DANDELION, Blocks.POPPY, Blocks.AZURE_BLUET, Blocks.OXEYE_DAISY};
         for (int x = -2; x <= 2; x++) {
             for (int z = -2; z <= 2; z++) {
@@ -308,19 +364,22 @@ public final class LuckyEffects {
         player.sendMessage(Text.translatable("message.luckycobblemon.healing_garden").formatted(Formatting.GREEN, Formatting.BOLD), false);
     }
 
-    private static void unlucky(ServerWorld world, ServerPlayerEntity player, BlockPos pos, Random random) {
+    private static void unlucky(ServerWorld world, ServerPlayerEntity player, BlockPos pos, Random random, long rollId) {
         switch (random.nextInt(6)) {
             case 0 -> {
+                LuckySessionLogger.recordResult(rollId, "unlucky", "gastly_fog", true);
                 player.addStatusEffect(new StatusEffectInstance(StatusEffects.BLINDNESS, 100, 0));
                 player.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 160, 1));
                 player.sendMessage(Text.translatable("message.luckycobblemon.unlucky_fog").formatted(Formatting.DARK_PURPLE), false);
                 world.spawnParticles(ParticleTypes.LARGE_SMOKE, pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5, 55, 1.0, 0.7, 1.0, 0.02);
             }
             case 1 -> {
+                LuckySessionLogger.recordResult(rollId, "unlucky", "poisonous_potatoes", true);
                 drop(world, pos, Items.POISONOUS_POTATO, between(random, 12, 32));
                 player.sendMessage(Text.translatable("message.luckycobblemon.unlucky_potatoes").formatted(Formatting.YELLOW), false);
             }
             case 2 -> {
+                LuckySessionLogger.recordResult(rollId, "unlucky", "thunder_scare", true);
                 world.playSound(null, pos, SoundEvents.ENTITY_LIGHTNING_BOLT_THUNDER, SoundCategory.WEATHER, 2.0F, 1.3F);
                 world.spawnParticles(ParticleTypes.ELECTRIC_SPARK, pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5,
                     50, 0.8, 1.0, 0.8, 0.12);
@@ -328,6 +387,7 @@ public final class LuckyEffects {
                 player.sendMessage(Text.translatable("message.luckycobblemon.unlucky_thunder").formatted(Formatting.YELLOW), false);
             }
             case 3 -> {
+                LuckySessionLogger.recordResult(rollId, "unlucky", "sticky_web", true);
                 for (int y = 0; y <= 1; y++) {
                     BlockPos target = pos.up(y);
                     if (world.getBlockState(target).isAir()) {
@@ -337,11 +397,13 @@ public final class LuckyEffects {
                 player.sendMessage(Text.translatable("message.luckycobblemon.unlucky_web").formatted(Formatting.WHITE), false);
             }
             case 4 -> {
+                LuckySessionLogger.recordResult(rollId, "unlucky", "hunger", true);
                 player.addStatusEffect(new StatusEffectInstance(StatusEffects.HUNGER, 240, 1));
                 player.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 100, 0));
                 player.sendMessage(Text.translatable("message.luckycobblemon.unlucky_hunger").formatted(Formatting.DARK_GREEN), false);
             }
             case 5 -> {
+                LuckySessionLogger.recordResult(rollId, "unlucky", "fake_gold", true);
                 drop(world, pos, Items.YELLOW_DYE, between(random, 16, 32));
                 world.spawnParticles(ParticleTypes.POOF, pos.getX() + 0.5, pos.getY() + 0.8, pos.getZ() + 0.5,
                     35, 0.5, 0.5, 0.5, 0.05);

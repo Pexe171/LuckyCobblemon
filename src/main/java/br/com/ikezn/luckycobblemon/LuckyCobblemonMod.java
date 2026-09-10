@@ -169,6 +169,9 @@ public final class LuckyCobblemonMod implements ModInitializer {
     public void onInitialize() {
         config = LuckyConfig.load(configPath);
 
+        String version = FabricLoader.getInstance().getModContainer(MOD_ID)
+            .map(container -> container.getMetadata().getVersion().getFriendlyString())
+            .orElse("unknown");
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.FUNCTIONAL).register(entries -> {
             entries.add(LUCKY_BLOCK_ITEM);
             entries.add(RARE_LUCKY_BLOCK_ITEM);
@@ -182,21 +185,27 @@ public final class LuckyCobblemonMod implements ModInitializer {
                     .requires(source -> source.hasPermissionLevel(2))
                     .executes(context -> reloadConfig(context.getSource())))
                 .then(literal("chances")
-                    .executes(context -> showChances(context.getSource()))))
+                    .executes(context -> showChances(context.getSource())))
+                .then(literal("logs")
+                    .executes(context -> showLogPath(context.getSource()))))
         );
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             config = LuckyConfig.load(configPath, true);
+            LuckySessionLogger.initialize(
+                FabricLoader.getInstance().getGameDir(),
+                version,
+                config.eventLogging,
+                config.maxLogFiles
+            );
             LOGGER.info("Cobblemon species pools validated successfully");
         });
+        ServerLifecycleEvents.SERVER_STOPPED.register(server -> LuckySessionLogger.shutdown());
         BiomeModifications.addFeature(
             BiomeSelectors.foundInOverworld(),
             GenerationStep.Feature.VEGETAL_DECORATION,
             NATURAL_LUCKY_BLOCK_PLACED_KEY
         );
 
-        String version = FabricLoader.getInstance().getModContainer(MOD_ID)
-            .map(container -> container.getMetadata().getVersion().getFriendlyString())
-            .orElse("unknown");
         boolean raidDensAvailable = FabricLoader.getInstance().isModLoaded("cobblemonraiddens");
         LOGGER.info("Lucky Cobblemon: Fortune Blocks {} initialized with {} base weight; Raid Dens: {}",
             version, config.totalWeight(), raidDensAvailable ? "available" : "fallback enabled");
@@ -217,7 +226,14 @@ public final class LuckyCobblemonMod implements ModInitializer {
                 return;
             }
             int luck = blockEntity instanceof LuckyBlockEntity luckyBlockEntity ? luckyBlockEntity.getLuck() : 0;
-            LuckyEffects.roll(serverWorld, serverPlayer, pos, config, luck);
+            LuckyEffects.roll(
+                serverWorld,
+                serverPlayer,
+                pos,
+                config,
+                luck,
+                Registries.BLOCK.getId(state.getBlock()).toString()
+            );
         }
     }
 
@@ -225,6 +241,7 @@ public final class LuckyCobblemonMod implements ModInitializer {
         try {
             LuckyConfig reloaded = LuckyConfig.reload(configPath);
             config = reloaded;
+            LuckySessionLogger.configure(reloaded.eventLogging, reloaded.maxLogFiles);
             source.sendFeedback(() -> Text.translatable("command.luckycobblemon.reload.success"), true);
             LOGGER.info("Lucky Cobblemon configuration reloaded with {} base weight", reloaded.totalWeight());
             return Command.SINGLE_SUCCESS;
@@ -252,6 +269,19 @@ public final class LuckyCobblemonMod implements ModInitializer {
             source.sendFeedback(() -> Text.translatable("command.luckycobblemon.chances.line",
                 Text.translatable(outcome.outcome().translationKey()), percentage), false);
         }
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private int showLogPath(ServerCommandSource source) {
+        Path logFile = LuckySessionLogger.currentFile();
+        if (logFile == null || !config.eventLogging) {
+            source.sendError(Text.translatable("command.luckycobblemon.logs.disabled"));
+            return 0;
+        }
+        source.sendFeedback(
+            () -> Text.translatable("command.luckycobblemon.logs.path", logFile.toAbsolutePath().normalize().toString()),
+            false
+        );
         return Command.SINGLE_SUCCESS;
     }
 }

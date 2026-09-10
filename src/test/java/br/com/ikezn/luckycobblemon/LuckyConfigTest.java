@@ -1,12 +1,20 @@
 package br.com.ikezn.luckycobblemon;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class LuckyConfigTest {
+    @TempDir
+    Path temporaryDirectory;
+
     @Test
     void defaultConfigurationIsStructurallyValid() {
         assertDoesNotThrow(() -> new LuckyConfig().validate(false));
@@ -54,5 +62,27 @@ class LuckyConfigTest {
         LuckyConfig invalidIdentifier = new LuckyConfig();
         invalidIdentifier.commonSpecies = List.of("not a valid species id");
         assertThrows(IllegalArgumentException.class, () -> invalidIdentifier.validate(false));
+    }
+
+    @Test
+    void rejectsInvalidLogRetention() {
+        LuckyConfig tooSmall = new LuckyConfig();
+        tooSmall.maxLogFiles = 0;
+        assertThrows(IllegalArgumentException.class, () -> tooSmall.validate(false));
+
+        LuckyConfig tooLarge = new LuckyConfig();
+        tooLarge.maxLogFiles = 101;
+        assertThrows(IllegalArgumentException.class, () -> tooLarge.validate(false));
+    }
+
+    @Test
+    void legacyConfigurationReceivesLoggingDefaults() throws Exception {
+        Path configPath = temporaryDirectory.resolve("luckycobblemon.json");
+        Files.writeString(configPath, "{}");
+
+        LuckyConfig loaded = LuckyConfig.load(configPath);
+
+        assertTrue(loaded.eventLogging);
+        assertEquals(20, loaded.maxLogFiles);
     }
 }

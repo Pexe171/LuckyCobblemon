@@ -48,7 +48,7 @@
 ## Instalação
 
 1. Instale o **Fabric Loader** para Minecraft `1.21.1`.
-2. Coloque **Fabric API**, **Cobblemon** e `lucky-cobblemon-0.6.0.jar` na pasta `mods`.
+2. Coloque **Fabric API**, **Cobblemon** e `lucky-cobblemon-0.6.1.jar` na pasta `mods`.
 3. Se quiser Raid Dens reais como resultado, adicione também **Cobblemon Raid Dens**.
 4. Inicie o jogo. O arquivo `config/luckycobblemon.json` será criado automaticamente.
 
@@ -136,7 +136,7 @@ Cada bloco natural nasce com sorte independente:
 
 ## Configuração
 
-Depois da primeira inicialização, edite `config/luckycobblemon.json`. É possível ajustar os pesos dos eventos, níveis mínimos e máximos, listas de espécies e `allowCreativeActivation`.
+Depois da primeira inicialização, edite `config/luckycobblemon.json`. É possível ajustar os pesos dos eventos, níveis mínimos e máximos, listas de espécies, `allowCreativeActivation`, `eventLogging` e `maxLogFiles`.
 
 Por padrão, quebrar o bloco no modo Criativo não ativa eventos. Defina `allowCreativeActivation` como `true` apenas se quiser permitir esse comportamento.
 
@@ -150,7 +150,16 @@ Se o arquivo ficar inválido, o mod salva uma cópia com o sufixo `.invalid-<tim
 | Comando | Permissão | Função |
 | --- | --- | --- |
 | `/luckycobblemon chances` | Todos | Mostra as chances exatas do Lucky Block segurado na mão principal. |
+| `/luckycobblemon logs` | Todos | Mostra o caminho completo do log da sessão atual. |
 | `/luckycobblemon reload` | Operador nível 2 | Valida espécies, pesos e níveis antes de aplicar novamente a configuração. |
+
+## Logs de teste
+
+Com `eventLogging: true` (padrão), cada inicialização cria um arquivo em `logs/luckycobblemon/session-AAAA-MM-DD_HH-mm-ss-SSS.log`. Ele registra variante, sorte, jogador, dimensão, coordenadas, categoria sorteada, detalhes do evento e qualquer fallback de Pokémon ou Raid Den.
+
+O mod mantém os 20 arquivos mais recentes por padrão. Use `maxLogFiles` para escolher um limite entre 1 e 100, ou `eventLogging: false` para desativar. Execute `/luckycobblemon logs` para ver o caminho exato durante o jogo.
+
+Para validar uma versão antes de publicar, siga o [roteiro de testes em PT-BR](docs/ROTEIRO-DE-TESTES.md). Ao encontrar um problema, envie o log da sessão junto com uma captura de tela e uma descrição do que aconteceu.
 
 ## Para desenvolvedores
 
@@ -166,7 +175,7 @@ No Windows:
 .\gradlew.bat build
 ```
 
-O JAR de distribuição será criado em `build/libs/lucky-cobblemon-0.6.0.jar`. O arquivo com `-sources` contém apenas o código-fonte e não deve ser instalado nem enviado como arquivo principal ao CurseForge.
+O JAR de distribuição será criado em `build/libs/lucky-cobblemon-0.6.1.jar`. O arquivo com `-sources` contém apenas o código-fonte e não deve ser instalado nem enviado como arquivo principal ao CurseForge.
 
 Para abrir um cliente de desenvolvimento completo, informe o JAR local do Cobblemon:
 
