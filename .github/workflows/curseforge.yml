@@ -66,7 +66,7 @@ jobs:
           project_id: ${{ env.CURSEFORGE_PROJECT_ID }}
           game_endpoint: minecraft
           file_path: ${{ steps.artifact.outputs.jar }}
-          display_name: Lucky Cobblemon ${{ steps.artifact.outputs.version }}
+          display_name: "Lucky Cobblemon: Fortune Blocks ${{ steps.artifact.outputs.version }}"
           release_type: ${{ github.event.inputs.release_type || 'release' }}
           changelog: ${{ github.event.release.body || 'See the full changelog at https://github.com/Pexe171/LuckyCobblemon/blob/main/docs/curseforge-changelog.md' }}
           changelog_type: markdown

@@ -33,8 +33,8 @@ public final class LuckyBlockItem extends BlockItem {
         int luck = getLuck(stack);
         Formatting color = luck > 0 ? Formatting.GREEN : luck < 0 ? Formatting.RED : Formatting.GRAY;
         String prefix = luck > 0 ? "+" : "";
-        tooltip.add(Text.literal("Sorte: " + prefix + luck).formatted(color));
-        tooltip.add(Text.literal("Combine com minerais na bancada").formatted(Formatting.DARK_GRAY));
+        tooltip.add(Text.translatable("tooltip.luckycobblemon.luck", prefix + luck).formatted(color));
+        tooltip.add(Text.translatable("tooltip.luckycobblemon.tuning").formatted(Formatting.DARK_GRAY));
     }
 
     @Override

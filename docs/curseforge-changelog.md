@@ -1,10 +1,10 @@
-## Lucky Cobblemon 0.5.0
+## Lucky Cobblemon: Fortune Blocks 0.5.1
 
-- Added natural Lucky Block generation to newly generated Overworld chunks.
-- Added independent luck values for naturally generated blocks.
-- Added configurable event weights, level ranges and species pools.
-- Added Lucky Shrines, trio encounters, item bundles and harmless unlucky events.
-- Added optional Cobblemon Raid Dens integration with a safe rare-encounter fallback.
-- The optional Raid Dens command is no longer attempted when the mod is absent.
-- Improved positive and negative luck weighting.
-- Preserved per-block luck when placed in the world.
+- Added complete Brazilian Portuguese and English localization.
+- Added `/luckycobblemon chances` for exact probabilities based on the held block.
+- Added the operator-only `/luckycobblemon reload` command.
+- Added safe, atomic configuration reloads with weight, level and species validation.
+- Added `allowCreativeActivation`, disabled by default.
+- Added automated tests for configuration and weighted outcomes.
+- Kept Cobblemon Raid Dens fully optional with a safe rare-encounter fallback.
+- Adopted the **Fortune Blocks** subtitle for a clearer project identity.

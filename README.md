@@ -2,7 +2,7 @@
   <img src="docs/media/lucky-cobblemon-icon.png" alt="Ícone do Lucky Cobblemon" width="220">
 </p>
 
-<h1 align="center">Lucky Cobblemon</h1>
+<h1 align="center">Lucky Cobblemon: Fortune Blocks</h1>
 
 <p align="center"><strong>Quebre o bloco. Teste a sua sorte. Encontre a próxima surpresa.</strong></p>
 
@@ -16,7 +16,7 @@
 
 ---
 
-**Lucky Cobblemon** é um mod para Fabric que leva blocos da sorte ao universo do Cobblemon. Cada bloco guarda um valor próprio entre **−100 e +100** e, quando quebrado, escolhe um evento temático: encontros de Pokémon, itens, trios, santuários, Raid Dens, efeitos de azar ou um jackpot lendário shiny.
+**Lucky Cobblemon: Fortune Blocks** é um mod para Fabric que leva blocos da sorte ao universo do Cobblemon. Cada bloco guarda um valor próprio entre **−100 e +100** e, quando quebrado, escolhe um evento temático: encontros de Pokémon, itens, trios, santuários, Raid Dens, efeitos de azar ou um jackpot lendário shiny.
 
 > [!IMPORTANT]
 > Este é um projeto independente e não oficial. **Cobblemon** e **Fabric API** são dependências obrigatórias. O mod deve ser instalado no servidor e nos clientes.
@@ -31,6 +31,7 @@
 | 🛠️ **Configurável** | Pesos, níveis e listas de espécies ficam em um JSON simples. |
 | 🧭 **Servidor e single-player** | A lógica dos eventos roda no servidor e funciona em mundos locais. |
 | 🏛️ **Integração opcional** | Com Raid Dens instalado, um resultado pode criar um Raid Den real. |
+| 🌐 **Dois idiomas** | Todas as mensagens e dicas estão disponíveis em português brasileiro e inglês. |
 
 ## Compatibilidade
 
@@ -46,7 +47,7 @@
 ## Instalação
 
 1. Instale o **Fabric Loader** para Minecraft `1.21.1`.
-2. Coloque **Fabric API**, **Cobblemon** e `lucky-cobblemon-0.5.0.jar` na pasta `mods`.
+2. Coloque **Fabric API**, **Cobblemon** e `lucky-cobblemon-0.5.1.jar` na pasta `mods`.
 3. Se quiser Raid Dens reais como resultado, adicione também **Cobblemon Raid Dens**.
 4. Inicie o jogo. O arquivo `config/luckycobblemon.json` será criado automaticamente.
 
@@ -111,12 +112,21 @@ Cada bloco natural nasce com sorte independente:
 
 ## Configuração
 
-Depois da primeira inicialização, edite `config/luckycobblemon.json`. É possível ajustar os pesos dos eventos, níveis mínimos e máximos e as listas de espécies de cada raridade.
+Depois da primeira inicialização, edite `config/luckycobblemon.json`. É possível ajustar os pesos dos eventos, níveis mínimos e máximos, listas de espécies e `allowCreativeActivation`.
+
+Por padrão, quebrar o bloco no modo Criativo não ativa eventos. Defina `allowCreativeActivation` como `true` apenas se quiser permitir esse comportamento.
 
 Se o arquivo ficar inválido, o mod salva uma cópia com o sufixo `.invalid-<timestamp>` e restaura os valores padrão.
 
 > [!TIP]
-> Faça uma cópia antes de alterar os pesos e reinicie o jogo ou servidor para aplicar a nova configuração.
+> Depois de editar o arquivo, use `/luckycobblemon reload` ou reinicie o jogo/servidor. Uma recarga inválida é rejeitada e a configuração anterior continua ativa.
+
+## Comandos
+
+| Comando | Permissão | Função |
+| --- | --- | --- |
+| `/luckycobblemon chances` | Todos | Mostra as chances exatas do Lucky Block segurado na mão principal. |
+| `/luckycobblemon reload` | Operador nível 2 | Valida espécies, pesos e níveis antes de aplicar novamente a configuração. |
 
 ## Para desenvolvedores
 
@@ -132,7 +142,7 @@ No Windows:
 .\gradlew.bat build
 ```
 
-O JAR de distribuição será criado em `build/libs/lucky-cobblemon-0.5.0.jar`. O arquivo com `-sources` contém apenas o código-fonte e não deve ser instalado nem enviado como arquivo principal ao CurseForge.
+O JAR de distribuição será criado em `build/libs/lucky-cobblemon-0.5.1.jar`. O arquivo com `-sources` contém apenas o código-fonte e não deve ser instalado nem enviado como arquivo principal ao CurseForge.
 
 Para abrir um cliente de desenvolvimento completo, informe o JAR local do Cobblemon:
 

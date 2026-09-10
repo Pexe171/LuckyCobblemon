@@ -8,9 +8,13 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.Instant;
 import java.util.List;
+import java.util.stream.Stream;
 
 public final class LuckyConfig {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    private static final int MAX_WEIGHT = 1_000_000;
+
+    public boolean allowCreativeActivation = false;
 
     public int commonWeight = 32;
     public int uncommonWeight = 23;
@@ -65,6 +69,10 @@ public final class LuckyConfig {
     );
 
     public static LuckyConfig load(Path path) {
+        return load(path, false);
+    }
+
+    public static LuckyConfig load(Path path, boolean validateSpecies) {
         LuckyConfig defaults = new LuckyConfig();
         try {
             Files.createDirectories(path.getParent());
@@ -73,11 +81,7 @@ public final class LuckyConfig {
                 return defaults;
             }
 
-            LuckyConfig loaded = GSON.fromJson(Files.readString(path), LuckyConfig.class);
-            if (loaded == null || !loaded.isValid()) {
-                throw new IllegalArgumentException("weights, levels or species pools are invalid");
-            }
-            return loaded;
+            return read(path, validateSpecies);
         } catch (Exception error) {
             LuckyCobblemonMod.LOGGER.error("Could not load {}. Using defaults.", path, error);
             try {
@@ -93,25 +97,56 @@ public final class LuckyConfig {
         }
     }
 
+    public static LuckyConfig reload(Path path) throws IOException {
+        return read(path, true);
+    }
+
+    private static LuckyConfig read(Path path, boolean validateSpecies) throws IOException {
+        LuckyConfig loaded = GSON.fromJson(Files.readString(path), LuckyConfig.class);
+        if (loaded == null) {
+            throw new IllegalArgumentException("configuration is empty");
+        }
+        loaded.validate(validateSpecies);
+        return loaded;
+    }
+
     public int totalWeight() {
-        return commonWeight + uncommonWeight + rareWeight + itemBundleWeight + epicWeight + raidWeight
+        return Math.toIntExact(totalWeightLong());
+    }
+
+    public void validate(boolean validateSpecies) {
+        if (!validWeights() || totalWeightLong() <= 0) {
+            throw new IllegalArgumentException("event weights must be between 0 and " + MAX_WEIGHT + " and total more than 0");
+        }
+        if (!validRange(commonMinLevel, commonMaxLevel)
+            || !validRange(uncommonMinLevel, uncommonMaxLevel)
+            || !validRange(rareMinLevel, rareMaxLevel)
+            || !validRange(epicMinLevel, epicMaxLevel)
+            || !validRange(mythicalMinLevel, mythicalMaxLevel)
+            || !validRange(legendaryMinLevel, legendaryMaxLevel)) {
+            throw new IllegalArgumentException("level ranges must stay between 1 and 100");
+        }
+        if (speciesPools().anyMatch(pool -> !validPool(pool))) {
+            throw new IllegalArgumentException("species pools cannot be empty or contain invalid identifiers");
+        }
+        if (validateSpecies) {
+            speciesPools().flatMap(List::stream).distinct().forEach(CobblemonSpeciesValidator::requireKnown);
+        }
+    }
+
+    private long totalWeightLong() {
+        return (long) commonWeight + uncommonWeight + rareWeight + itemBundleWeight + epicWeight + raidWeight
             + trioWeight + shrineWeight + mythicalWeight + unluckyWeight + legendaryJackpotWeight;
     }
 
-    private boolean isValid() {
-        return totalWeight() > 0
-            && commonWeight >= 0 && uncommonWeight >= 0 && rareWeight >= 0
-            && itemBundleWeight >= 0 && epicWeight >= 0 && raidWeight >= 0 && trioWeight >= 0
-            && shrineWeight >= 0 && mythicalWeight >= 0 && unluckyWeight >= 0
-            && legendaryJackpotWeight >= 0
-            && validRange(commonMinLevel, commonMaxLevel)
-            && validRange(uncommonMinLevel, uncommonMaxLevel)
-            && validRange(rareMinLevel, rareMaxLevel)
-            && validRange(epicMinLevel, epicMaxLevel)
-            && validRange(mythicalMinLevel, mythicalMaxLevel)
-            && validRange(legendaryMinLevel, legendaryMaxLevel)
-            && validPool(commonSpecies) && validPool(uncommonSpecies) && validPool(rareSpecies)
-            && validPool(epicSpecies) && validPool(mythicalSpecies) && validPool(legendarySpecies);
+    private boolean validWeights() {
+        return Stream.of(commonWeight, uncommonWeight, rareWeight, itemBundleWeight, epicWeight, raidWeight,
+            trioWeight, shrineWeight, mythicalWeight, unluckyWeight, legendaryJackpotWeight)
+            .allMatch(weight -> weight >= 0 && weight <= MAX_WEIGHT);
+    }
+
+    private Stream<List<String>> speciesPools() {
+        return Stream.of(commonSpecies, uncommonSpecies, rareSpecies, epicSpecies, mythicalSpecies, legendarySpecies);
     }
 
     private static boolean validRange(int min, int max) {
@@ -119,6 +154,16 @@ public final class LuckyConfig {
     }
 
     private static boolean validPool(List<String> pool) {
-        return pool != null && !pool.isEmpty() && pool.stream().allMatch(value -> value != null && !value.isBlank());
+        return pool != null && !pool.isEmpty() && pool.stream().allMatch(value -> {
+            if (value == null || value.isBlank()) {
+                return false;
+            }
+            try {
+                net.minecraft.util.Identifier.of(value.contains(":") ? value : "cobblemon:" + value);
+                return true;
+            } catch (RuntimeException error) {
+                return false;
+            }
+        });
     }
 }

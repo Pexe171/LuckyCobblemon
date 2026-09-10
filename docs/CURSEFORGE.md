@@ -6,7 +6,7 @@ O projeto está configurado com o ID **1689137**. O CurseForge exige título, re
 
 | Campo | Valor recomendado |
 | --- | --- |
-| Name | Lucky Cobblemon |
+| Name | Lucky Cobblemon: Fortune Blocks |
 | Summary | Cobblemon-themed lucky blocks with per-block luck, wild encounters, loot, shrines and rare jackpots. |
 | Class | Mods |
 | Main category | Adventure and RPG |
@@ -17,7 +17,7 @@ O projeto está configurado com o ID **1689137**. O CurseForge exige título, re
 ## Description
 
 ```markdown
-# 🍀 Lucky Cobblemon
+# 🍀 Lucky Cobblemon: Fortune Blocks
 
 **Break the block, test your luck, and discover a Cobblemon-themed surprise!**
 
@@ -35,6 +35,10 @@ Lucky Cobblemon is a Fabric mod that adds craftable and naturally generated Luck
 - Per-block luck values preserved when placed
 - Configurable event weights, Pokémon levels and species pools
 - Natural generation in newly generated Overworld chunks
+- Brazilian Portuguese and English localization
+- In-game probability viewer for the Lucky Block in your main hand
+- Safe configuration reload command for server operators
+- Creative-mode activation disabled by default
 
 ## 🎲 Luck System
 
@@ -54,7 +58,9 @@ Install the mod and its required dependencies on both the server and every conne
 
 ## ⚙️ Configuration
 
-Edit `config/luckycobblemon.json` after the first launch to customize event weights, level ranges and species pools. Invalid configurations are automatically backed up before defaults are restored.
+Edit `config/luckycobblemon.json` after the first launch to customize event weights, level ranges, species pools and Creative-mode activation. Invalid configurations are automatically backed up before defaults are restored.
+
+Use `/luckycobblemon chances` while holding a Lucky Block to inspect its exact outcome chances. Server operators can use `/luckycobblemon reload` to validate and apply configuration changes without restarting.
 
 ## 🔗 Links
 
@@ -74,7 +80,7 @@ Lucky Cobblemon is an independent, unofficial community add-on and is not affili
 
 ## Arquivo a enviar
 
-Envie `build/libs/lucky-cobblemon-0.5.0.jar`. Não envie o JAR `-sources` como arquivo principal.
+Envie `build/libs/lucky-cobblemon-0.5.1.jar`. Não envie o JAR `-sources` como arquivo principal.
 
 ## Automação
 
@@ -89,5 +95,7 @@ O workflow `.github/workflows/curseforge.yml` compila e envia o JAR pela API ofi
 - [ ] Confirmar a geração em chunks novos.
 - [ ] Testar com e sem Cobblemon Raid Dens.
 - [ ] Confirmar a configuração `config/luckycobblemon.json`.
-- [ ] Criar a tag e a GitHub Release `v0.5.0`.
+- [ ] Confirmar os comandos em PT-BR e inglês.
+- [ ] Confirmar que o modo Criativo não ativa eventos por padrão.
+- [ ] Criar a tag e a GitHub Release `v0.5.1`.
 - [ ] Conferir o arquivo no painel do CurseForge após o upload.

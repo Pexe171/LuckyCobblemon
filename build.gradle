@@ -20,6 +20,10 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
+    testImplementation platform('org.junit:junit-bom:5.12.2')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
     if (!project.hasProperty('visualCheck')) {
         def cobblemonRuntimeJar = providers.gradleProperty('cobblemon_runtime_jar').orNull
         if (cobblemonRuntimeJar != null) {
@@ -31,6 +35,10 @@ dependencies {
         }
         modRuntimeOnly "net.fabricmc:fabric-language-kotlin:1.13.10+kotlin.2.3.20"
     }
+}
+
+test {
+    useJUnitPlatform()
 }
 
 processResources {

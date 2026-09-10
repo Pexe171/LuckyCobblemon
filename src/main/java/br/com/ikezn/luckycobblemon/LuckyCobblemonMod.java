@@ -1,10 +1,16 @@
 package br.com.ikezn.luckycobblemon;
 
+import com.mojang.brigadier.Command;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import java.nio.file.Path;
+import java.util.Locale;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
 import net.fabricmc.fabric.api.biome.v1.BiomeSelectors;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.AbstractBlock;
@@ -16,6 +22,7 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.component.ComponentType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroups;
+import net.minecraft.item.ItemStack;
 import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.recipe.RecipeSerializer;
 import net.minecraft.recipe.SpecialRecipeSerializer;
@@ -24,8 +31,11 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.BlockSoundGroup;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -34,6 +44,8 @@ import net.minecraft.world.gen.feature.Feature;
 import net.minecraft.world.gen.feature.PlacedFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static net.minecraft.server.command.CommandManager.literal;
 
 public final class LuckyCobblemonMod implements ModInitializer {
     public static final String MOD_ID = "luckycobblemon";
@@ -90,21 +102,39 @@ public final class LuckyCobblemonMod implements ModInitializer {
         new NaturalLuckyBlockFeature()
     );
 
-    private LuckyConfig config;
+    private final Path configPath = FabricLoader.getInstance().getConfigDir().resolve("luckycobblemon.json");
+    private volatile LuckyConfig config;
 
     @Override
     public void onInitialize() {
-        config = LuckyConfig.load(FabricLoader.getInstance().getConfigDir().resolve("luckycobblemon.json"));
+        config = LuckyConfig.load(configPath);
 
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.FUNCTIONAL).register(entries -> entries.add(LUCKY_BLOCK_ITEM));
         PlayerBlockBreakEvents.AFTER.register(this::afterBlockBroken);
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
+            dispatcher.register(literal("luckycobblemon")
+                .then(literal("reload")
+                    .requires(source -> source.hasPermissionLevel(2))
+                    .executes(context -> reloadConfig(context.getSource())))
+                .then(literal("chances")
+                    .executes(context -> showChances(context.getSource()))))
+        );
+        ServerLifecycleEvents.SERVER_STARTED.register(server -> {
+            config = LuckyConfig.load(configPath, true);
+            LOGGER.info("Cobblemon species pools validated successfully");
+        });
         BiomeModifications.addFeature(
             BiomeSelectors.foundInOverworld(),
             GenerationStep.Feature.VEGETAL_DECORATION,
             NATURAL_LUCKY_BLOCK_PLACED_KEY
         );
 
-        LOGGER.info("Lucky Cobblemon {} initialized with {} base weighted outcomes and natural Overworld generation", "0.5.0", config.totalWeight());
+        String version = FabricLoader.getInstance().getModContainer(MOD_ID)
+            .map(container -> container.getMetadata().getVersion().getFriendlyString())
+            .orElse("unknown");
+        boolean raidDensAvailable = FabricLoader.getInstance().isModLoaded("cobblemonraiddens");
+        LOGGER.info("Lucky Cobblemon: Fortune Blocks {} initialized with {} base weight; Raid Dens: {}",
+            version, config.totalWeight(), raidDensAvailable ? "available" : "fallback enabled");
     }
 
     private void afterBlockBroken(
@@ -117,8 +147,46 @@ public final class LuckyCobblemonMod implements ModInitializer {
         if (world instanceof ServerWorld serverWorld
             && player instanceof ServerPlayerEntity serverPlayer
             && state.isOf(LUCKY_BLOCK)) {
+            if (serverPlayer.isCreative() && !config.allowCreativeActivation) {
+                serverPlayer.sendMessage(Text.translatable("message.luckycobblemon.creative_disabled").formatted(Formatting.YELLOW), true);
+                return;
+            }
             int luck = blockEntity instanceof LuckyBlockEntity luckyBlockEntity ? luckyBlockEntity.getLuck() : 0;
             LuckyEffects.roll(serverWorld, serverPlayer, pos, config, luck);
         }
+    }
+
+    private int reloadConfig(ServerCommandSource source) {
+        try {
+            LuckyConfig reloaded = LuckyConfig.reload(configPath);
+            config = reloaded;
+            source.sendFeedback(() -> Text.translatable("command.luckycobblemon.reload.success"), true);
+            LOGGER.info("Lucky Cobblemon configuration reloaded with {} base weight", reloaded.totalWeight());
+            return Command.SINGLE_SUCCESS;
+        } catch (Exception error) {
+            LOGGER.warn("Rejected invalid Lucky Cobblemon configuration; keeping the previous settings", error);
+            source.sendError(Text.translatable("command.luckycobblemon.reload.failure", error.getMessage()));
+            return 0;
+        }
+    }
+
+    private int showChances(ServerCommandSource source) throws CommandSyntaxException {
+        ServerPlayerEntity player = source.getPlayerOrThrow();
+        ItemStack stack = player.getMainHandStack();
+        if (!stack.isOf(LUCKY_BLOCK_ITEM)) {
+            source.sendError(Text.translatable("command.luckycobblemon.chances.no_block"));
+            return 0;
+        }
+
+        int luck = LuckyBlockItem.getLuck(stack);
+        LuckyProbabilities probabilities = LuckyProbabilities.forLuck(config, luck);
+        String luckLabel = luck > 0 ? "+" + luck : Integer.toString(luck);
+        source.sendFeedback(() -> Text.translatable("command.luckycobblemon.chances.header", luckLabel), false);
+        for (LuckyProbabilities.WeightedOutcome outcome : probabilities.outcomes()) {
+            String percentage = String.format(Locale.ROOT, "%.2f%%", probabilities.percentage(outcome));
+            source.sendFeedback(() -> Text.translatable("command.luckycobblemon.chances.line",
+                Text.translatable(outcome.outcome().translationKey()), percentage), false);
+        }
+        return Command.SINGLE_SUCCESS;
     }
 }

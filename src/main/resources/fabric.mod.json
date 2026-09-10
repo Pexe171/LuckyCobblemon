@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "id": "luckycobblemon",
   "version": "${version}",
-  "name": "Lucky Cobblemon",
-  "description": "Blocos da sorte com encontros, recompensas, azar e jackpots temáticos para Cobblemon.",
+  "name": "Lucky Cobblemon: Fortune Blocks",
+  "description": "Cobblemon-themed lucky blocks with per-block luck, encounters, loot, shrines and rare jackpots.",
   "authors": ["Pexe171"],
   "contact": {
     "homepage": "https://github.com/Pexe171/LuckyCobblemon",
