@@ -81,7 +81,7 @@ jobs:
             --output "$RUNNER_TEMP/curseforge-response.json" \
             --write-out '%{http_code}' \
             -H "X-Api-Token: $CURSEFORGE_API_TOKEN" \
-            -F "metadata=@$RUNNER_TEMP/curseforge-metadata.json;type=application/json" \
+            -F "metadata=<$RUNNER_TEMP/curseforge-metadata.json" \
             -F "file=@$JAR;type=application/java-archive" \
             "https://minecraft.curseforge.com/api/projects/${CURSEFORGE_PROJECT_ID}/upload-file")"
 
