@@ -49,53 +49,29 @@ jobs:
       - name: Compilar o lançamento
         run: ./gradlew clean build --stacktrace
 
-      - name: Enviar para o CurseForge
-        env:
-          CURSEFORGE_API_TOKEN: ${{ secrets.CURSEFORGE_API_TOKEN }}
-          RELEASE_TYPE: ${{ github.event.inputs.release_type || 'release' }}
+      - name: Localizar o artefato
+        id: artifact
         run: |
           VERSION="$(sed -n 's/^mod_version=//p' gradle.properties)"
           JAR="build/libs/lucky-cobblemon-${VERSION}.jar"
           test -f "$JAR"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "jar=$JAR" >> "$GITHUB_OUTPUT"
 
-          jq -n \
-            --rawfile changelog docs/curseforge-changelog.md \
-            --arg displayName "Lucky Cobblemon ${VERSION}" \
-            --arg releaseType "$RELEASE_TYPE" \
-            '{
-              changelog: $changelog,
-              changelogType: "markdown",
-              displayName: $displayName,
-              gameVersionNames: ["1.21.1", "Fabric", "Java 21", "Client", "Server"],
-              releaseType: $releaseType,
-              relations: {
-                projects: [
-                  {projectID: "306612", type: "requiredDependency"},
-                  {projectID: "687131", type: "requiredDependency"},
-                  {projectID: "1349231", type: "optionalDependency"}
-                ]
-              }
-            }' > "$RUNNER_TEMP/curseforge-metadata.json"
-
-          METADATA="$(jq -c . "$RUNNER_TEMP/curseforge-metadata.json")"
-
-          HTTP_STATUS="$(curl --silent --show-error \
-            --output "$RUNNER_TEMP/curseforge-response.json" \
-            --write-out '%{http_code}' \
-            -H "X-Api-Token: $CURSEFORGE_API_TOKEN" \
-            -F "metadata=$METADATA;type=application/json" \
-            -F "file=@$JAR;type=application/java-archive" \
-            "https://minecraft.curseforge.com/api/projects/${CURSEFORGE_PROJECT_ID}/upload-file")"
-
-          cat "$RUNNER_TEMP/curseforge-response.json"
-          if [[ "$HTTP_STATUS" != 2* ]]; then
-            echo "Upload recusado pelo CurseForge (HTTP $HTTP_STATUS)."
-            exit 1
-          fi
-
-          FILE_ID="$(jq -r '.id' "$RUNNER_TEMP/curseforge-response.json")"
-          test "$FILE_ID" != "null"
-          echo "Arquivo enviado ao CurseForge com ID $FILE_ID."
+      - name: Enviar para o CurseForge
+        id: curseforge
+        uses: itsmeow/curseforge-upload@v3.1.2
+        with:
+          token: ${{ secrets.CURSEFORGE_API_TOKEN }}
+          project_id: ${{ env.CURSEFORGE_PROJECT_ID }}
+          game_endpoint: minecraft
+          file_path: ${{ steps.artifact.outputs.jar }}
+          display_name: Lucky Cobblemon ${{ steps.artifact.outputs.version }}
+          release_type: ${{ github.event.inputs.release_type || 'release' }}
+          changelog: ${{ github.event.release.body || 'See the full changelog at https://github.com/Pexe171/LuckyCobblemon/blob/main/docs/curseforge-changelog.md' }}
+          changelog_type: markdown
+          game_versions: Minecraft 1.21:1.21.1,Java 21,Fabric,Client,Server
+          relations: fabric-api:requiredDependency,cobblemon:requiredDependency,cobblemonraiddens:optionalDependency
 
       - name: Guardar o JAR publicado
         uses: actions/upload-artifact@v6
