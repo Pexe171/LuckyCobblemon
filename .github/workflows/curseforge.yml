@@ -73,6 +73,9 @@ jobs:
           game_versions: Minecraft 1.21:1.21.1,Java 21,Fabric,Client,Server
           relations: fabric-api:requiredDependency,cobblemon:requiredDependency,cobblemonraiddens:optionalDependency
 
+      - name: Confirmar o arquivo criado
+        run: echo "Arquivo CurseForge criado com ID ${{ steps.curseforge.outputs.id }}."
+
       - name: Guardar o JAR publicado
         uses: actions/upload-artifact@v6
         with:
