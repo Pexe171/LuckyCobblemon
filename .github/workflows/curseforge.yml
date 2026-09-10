@@ -77,13 +77,15 @@ jobs:
               }
             }' > "$RUNNER_TEMP/curseforge-metadata.json"
 
+          METADATA="$(jq -c . "$RUNNER_TEMP/curseforge-metadata.json")"
+
           HTTP_STATUS="$(curl --silent --show-error \
             --output "$RUNNER_TEMP/curseforge-response.json" \
             --write-out '%{http_code}' \
             -H "X-Api-Token: $CURSEFORGE_API_TOKEN" \
-            --form-string "metadata=$(jq -c . "$RUNNER_TEMP/curseforge-metadata.json")" \
+            -F "metadata=$METADATA;type=application/json" \
             -F "file=@$JAR;type=application/java-archive" \
-            "https://minecraft.curseforge.com/api/v1/projects/${CURSEFORGE_PROJECT_ID}/upload-file")"
+            "https://minecraft.curseforge.com/api/projects/${CURSEFORGE_PROJECT_ID}/upload-file")"
 
           cat "$RUNNER_TEMP/curseforge-response.json"
           if [[ "$HTTP_STATUS" != 2* ]]; then
