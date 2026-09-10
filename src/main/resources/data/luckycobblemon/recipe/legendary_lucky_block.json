@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GBG",
+    "BLB",
+    "GSG"
+  ],
+  "key": {
+    "G": { "item": "minecraft:gold_block" },
+    "B": { "item": "minecraft:blaze_rod" },
+    "L": { "item": "luckycobblemon:rare_lucky_block" },
+    "S": { "item": "minecraft:nether_star" }
+  },
+  "result": {
+    "id": "luckycobblemon:legendary_lucky_block",
+    "count": 1
+  }
+}

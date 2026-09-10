@@ -35,6 +35,8 @@ Lucky Cobblemon is a Fabric mod that adds craftable and naturally generated Luck
 - Per-block luck values preserved when placed
 - Configurable event weights, Pokémon levels and species pools
 - Natural generation in newly generated Overworld chunks
+- Four craftable variants: Common, Rare, Legendary and Cursed
+- 15 new event variations for supplies, group encounters, shrines and non-lethal bad luck
 - Brazilian Portuguese and English localization
 - In-game probability viewer for the Lucky Block in your main hand
 - Safe configuration reload command for server operators
@@ -80,7 +82,7 @@ Lucky Cobblemon is an independent, unofficial community add-on and is not affili
 
 ## Arquivo a enviar
 
-Envie `build/libs/lucky-cobblemon-0.5.1.jar`. Não envie o JAR `-sources` como arquivo principal.
+Envie `build/libs/lucky-cobblemon-0.6.0.jar`. Não envie o JAR `-sources` como arquivo principal.
 
 ## Automação
 
@@ -97,5 +99,7 @@ O workflow `.github/workflows/curseforge.yml` compila e envia o JAR pela API ofi
 - [ ] Confirmar a configuração `config/luckycobblemon.json`.
 - [ ] Confirmar os comandos em PT-BR e inglês.
 - [ ] Confirmar que o modo Criativo não ativa eventos por padrão.
-- [ ] Criar a tag e a GitHub Release `v0.5.1`.
+- [ ] Testar as quatro variantes e suas receitas.
+- [ ] Conferir os 15 novos eventos e variações.
+- [ ] Criar a tag e a GitHub Release `v0.6.0`.
 - [ ] Conferir o arquivo no painel do CurseForge após o upload.

@@ -1,0 +1,15 @@
+{
+  "parent": "luckycobblemon:block/lucky_block",
+  "textures": {
+    "cherry": "luckycobblemon:block/legendary_lucky_block",
+    "cherry_edge": "luckycobblemon:block/cherry_edge",
+    "porcelain": "luckycobblemon:block/legendary_lucky_block",
+    "porcelain_edge": "luckycobblemon:block/champagne",
+    "champagne": "luckycobblemon:block/champagne",
+    "bronze": "luckycobblemon:block/bronze",
+    "graphite": "luckycobblemon:block/graphite",
+    "inlay": "luckycobblemon:block/legendary_lucky_block",
+    "pulse": "luckycobblemon:block/pulse",
+    "particle": "luckycobblemon:block/legendary_lucky_block"
+  }
+}

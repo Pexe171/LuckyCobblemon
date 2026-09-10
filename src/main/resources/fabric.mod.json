@@ -3,7 +3,7 @@
   "id": "luckycobblemon",
   "version": "${version}",
   "name": "Lucky Cobblemon: Fortune Blocks",
-  "description": "Cobblemon-themed lucky blocks with per-block luck, encounters, loot, shrines and rare jackpots.",
+  "description": "Four Cobblemon-themed lucky block variants with per-block luck, encounters, loot, shrines and rare jackpots.",
   "authors": ["Pexe171"],
   "contact": {
     "homepage": "https://github.com/Pexe171/LuckyCobblemon",

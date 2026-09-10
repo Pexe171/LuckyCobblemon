@@ -2,6 +2,22 @@
 
 Todas as mudanças relevantes do Lucky Cobblemon são registradas neste arquivo.
 
+## [0.6.0] — 2026-09-09
+
+### Adicionado
+
+- Blocos da Sorte Raro, Lendário e Amaldiçoado com sorte-base, receitas e visuais próprios.
+- Seis variações de suprimentos: apricorns, berries, pedras evolutivas, remédios, minerais e fósseis.
+- Três encontros coletivos: revoada comum, dupla rara e desfile de iniciais.
+- Altar de Cristal e Jardim de Cura como novos santuários.
+- Quatro azares não letais: trovões, teias, fome e ouro falso.
+- Testes de integridade para modelos, texturas, receitas e traduções.
+
+### Alterado
+
+- A receita de ajuste de sorte agora funciona com todas as variantes e preserva o tipo do bloco.
+- A aba de itens funcionais agora apresenta os quatro Lucky Blocks.
+
 ## [0.5.1] — 2026-09-09
 
 ### Adicionado
@@ -43,6 +59,7 @@ Todas as mudanças relevantes do Lucky Cobblemon são registradas neste arquivo.
 - Transformações próprias para mãos, chão e inventário.
 - Contorno e colisão ajustados ao novo formato.
 
+[0.6.0]: https://github.com/Pexe171/LuckyCobblemon/releases/tag/v0.6.0
 [0.5.1]: https://github.com/Pexe171/LuckyCobblemon/releases/tag/v0.5.1
 [0.5.0]: https://github.com/Pexe171/LuckyCobblemon/releases/tag/v0.5.0
 [0.4.0]: https://github.com/Pexe171/LuckyCobblemon/releases/tag/v0.4.0

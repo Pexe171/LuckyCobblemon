@@ -46,7 +46,7 @@ public final class LuckyTuningRecipe extends SpecialCraftingRecipe {
         if (result == null) {
             return ItemStack.EMPTY;
         }
-        ItemStack output = new ItemStack(LuckyCobblemonMod.LUCKY_BLOCK_ITEM);
+        ItemStack output = result.source().copyWithCount(1);
         LuckyBlockItem.setLuck(output, result.luck());
         return output;
     }
@@ -71,7 +71,7 @@ public final class LuckyTuningRecipe extends SpecialCraftingRecipe {
             if (stack.isEmpty()) {
                 continue;
             }
-            if (stack.isOf(LuckyCobblemonMod.LUCKY_BLOCK_ITEM)) {
+            if (stack.getItem() instanceof LuckyBlockItem) {
                 if (!luckyBlock.isEmpty() || stack.getCount() != 1) {
                     return null;
                 }
@@ -91,9 +91,9 @@ public final class LuckyTuningRecipe extends SpecialCraftingRecipe {
         }
         int oldLuck = LuckyBlockItem.getLuck(luckyBlock);
         int newLuck = Math.clamp(oldLuck + change, -100, 100);
-        return newLuck == oldLuck ? null : new RecipeResult(newLuck);
+        return newLuck == oldLuck ? null : new RecipeResult(luckyBlock, newLuck);
     }
 
-    private record RecipeResult(int luck) {
+    private record RecipeResult(ItemStack source, int luck) {
     }
 }

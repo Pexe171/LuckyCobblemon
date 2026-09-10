@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SFS",
+    "FLF",
+    "SFS"
+  ],
+  "key": {
+    "S": { "item": "minecraft:soul_sand" },
+    "F": { "item": "minecraft:fermented_spider_eye" },
+    "L": { "item": "luckycobblemon:lucky_block" }
+  },
+  "result": {
+    "id": "luckycobblemon:cursed_lucky_block",
+    "count": 1
+  }
+}

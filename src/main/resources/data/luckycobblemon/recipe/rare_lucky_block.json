@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "DAD",
+    "ALA",
+    "DAD"
+  ],
+  "key": {
+    "D": { "item": "minecraft:diamond" },
+    "A": { "item": "minecraft:amethyst_shard" },
+    "L": { "item": "luckycobblemon:lucky_block" }
+  },
+  "result": {
+    "id": "luckycobblemon:rare_lucky_block",
+    "count": 1
+  }
+}

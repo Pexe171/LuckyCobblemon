@@ -51,6 +51,9 @@ public final class LuckyCobblemonMod implements ModInitializer {
     public static final String MOD_ID = "luckycobblemon";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
     public static final Identifier LUCKY_BLOCK_ID = Identifier.of(MOD_ID, "lucky_block");
+    public static final Identifier RARE_LUCKY_BLOCK_ID = Identifier.of(MOD_ID, "rare_lucky_block");
+    public static final Identifier LEGENDARY_LUCKY_BLOCK_ID = Identifier.of(MOD_ID, "legendary_lucky_block");
+    public static final Identifier CURSED_LUCKY_BLOCK_ID = Identifier.of(MOD_ID, "cursed_lucky_block");
     public static final Identifier LUCK_ID = Identifier.of(MOD_ID, "luck");
     public static final Identifier NATURAL_LUCKY_BLOCK_ID = Identifier.of(MOD_ID, "natural_lucky_block");
     public static final RegistryKey<PlacedFeature> NATURAL_LUCKY_BLOCK_PLACED_KEY = RegistryKey.of(
@@ -69,6 +72,39 @@ public final class LuckyCobblemonMod implements ModInitializer {
             .luminance(state -> 7))
     );
 
+    public static final Block RARE_LUCKY_BLOCK = Registry.register(
+        Registries.BLOCK,
+        RARE_LUCKY_BLOCK_ID,
+        new LuckyBlock(AbstractBlock.Settings.create()
+            .mapColor(MapColor.BLUE)
+            .strength(1.2F)
+            .nonOpaque()
+            .sounds(BlockSoundGroup.METAL)
+            .luminance(state -> 9))
+    );
+
+    public static final Block LEGENDARY_LUCKY_BLOCK = Registry.register(
+        Registries.BLOCK,
+        LEGENDARY_LUCKY_BLOCK_ID,
+        new LuckyBlock(AbstractBlock.Settings.create()
+            .mapColor(MapColor.GOLD)
+            .strength(1.6F)
+            .nonOpaque()
+            .sounds(BlockSoundGroup.METAL)
+            .luminance(state -> 13))
+    );
+
+    public static final Block CURSED_LUCKY_BLOCK = Registry.register(
+        Registries.BLOCK,
+        CURSED_LUCKY_BLOCK_ID,
+        new LuckyBlock(AbstractBlock.Settings.create()
+            .mapColor(MapColor.PURPLE)
+            .strength(1.0F)
+            .nonOpaque()
+            .sounds(BlockSoundGroup.DEEPSLATE)
+            .luminance(state -> 5))
+    );
+
     public static final ComponentType<Integer> LUCK_COMPONENT = Registry.register(
         Registries.DATA_COMPONENT_TYPE,
         LUCK_ID,
@@ -81,13 +117,37 @@ public final class LuckyCobblemonMod implements ModInitializer {
     public static final BlockEntityType<LuckyBlockEntity> LUCKY_BLOCK_ENTITY = Registry.register(
         Registries.BLOCK_ENTITY_TYPE,
         LUCKY_BLOCK_ID,
-        FabricBlockEntityTypeBuilder.create(LuckyBlockEntity::new, LUCKY_BLOCK).build()
+        FabricBlockEntityTypeBuilder.create(
+            LuckyBlockEntity::new,
+            LUCKY_BLOCK,
+            RARE_LUCKY_BLOCK,
+            LEGENDARY_LUCKY_BLOCK,
+            CURSED_LUCKY_BLOCK
+        ).build()
     );
 
     public static final Item LUCKY_BLOCK_ITEM = Registry.register(
         Registries.ITEM,
         LUCKY_BLOCK_ID,
         new LuckyBlockItem(LUCKY_BLOCK, new Item.Settings())
+    );
+
+    public static final Item RARE_LUCKY_BLOCK_ITEM = Registry.register(
+        Registries.ITEM,
+        RARE_LUCKY_BLOCK_ID,
+        new LuckyBlockItem(RARE_LUCKY_BLOCK, new Item.Settings().component(LUCK_COMPONENT, 35))
+    );
+
+    public static final Item LEGENDARY_LUCKY_BLOCK_ITEM = Registry.register(
+        Registries.ITEM,
+        LEGENDARY_LUCKY_BLOCK_ID,
+        new LuckyBlockItem(LEGENDARY_LUCKY_BLOCK, new Item.Settings().component(LUCK_COMPONENT, 75))
+    );
+
+    public static final Item CURSED_LUCKY_BLOCK_ITEM = Registry.register(
+        Registries.ITEM,
+        CURSED_LUCKY_BLOCK_ID,
+        new LuckyBlockItem(CURSED_LUCKY_BLOCK, new Item.Settings().component(LUCK_COMPONENT, -65))
     );
 
     public static final RecipeSerializer<LuckyTuningRecipe> LUCK_TUNING_RECIPE = Registry.register(
@@ -109,7 +169,12 @@ public final class LuckyCobblemonMod implements ModInitializer {
     public void onInitialize() {
         config = LuckyConfig.load(configPath);
 
-        ItemGroupEvents.modifyEntriesEvent(ItemGroups.FUNCTIONAL).register(entries -> entries.add(LUCKY_BLOCK_ITEM));
+        ItemGroupEvents.modifyEntriesEvent(ItemGroups.FUNCTIONAL).register(entries -> {
+            entries.add(LUCKY_BLOCK_ITEM);
+            entries.add(RARE_LUCKY_BLOCK_ITEM);
+            entries.add(LEGENDARY_LUCKY_BLOCK_ITEM);
+            entries.add(CURSED_LUCKY_BLOCK_ITEM);
+        });
         PlayerBlockBreakEvents.AFTER.register(this::afterBlockBroken);
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
             dispatcher.register(literal("luckycobblemon")
@@ -146,7 +211,7 @@ public final class LuckyCobblemonMod implements ModInitializer {
     ) {
         if (world instanceof ServerWorld serverWorld
             && player instanceof ServerPlayerEntity serverPlayer
-            && state.isOf(LUCKY_BLOCK)) {
+            && state.getBlock() instanceof LuckyBlock) {
             if (serverPlayer.isCreative() && !config.allowCreativeActivation) {
                 serverPlayer.sendMessage(Text.translatable("message.luckycobblemon.creative_disabled").formatted(Formatting.YELLOW), true);
                 return;
@@ -173,7 +238,7 @@ public final class LuckyCobblemonMod implements ModInitializer {
     private int showChances(ServerCommandSource source) throws CommandSyntaxException {
         ServerPlayerEntity player = source.getPlayerOrThrow();
         ItemStack stack = player.getMainHandStack();
-        if (!stack.isOf(LUCKY_BLOCK_ITEM)) {
+        if (!(stack.getItem() instanceof LuckyBlockItem)) {
             source.sendError(Text.translatable("command.luckycobblemon.chances.no_block"));
             return 0;
         }

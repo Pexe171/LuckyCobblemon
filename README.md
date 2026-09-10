@@ -27,7 +27,8 @@
 | --- | --- |
 | 🎲 **Sorte por bloco** | Cada bloco preserva seu próprio valor, inclusive depois de ser colocado. |
 | 🌍 **Geração natural** | Novos chunks do mundo normal podem gerar Lucky Blocks na superfície. |
-| ✨ **Eventos temáticos** | Pokémon em seis raridades, shinies, suprimentos, trios e jackpot. |
+| ✨ **26 eventos e variações** | Pokémon, shinies, suprimentos, grupos, santuários, azares e jackpots. |
+| 🧱 **Quatro variantes** | Comum, Rara, Lendária e Amaldiçoada, cada uma com sorte-base própria. |
 | 🛠️ **Configurável** | Pesos, níveis e listas de espécies ficam em um JSON simples. |
 | 🧭 **Servidor e single-player** | A lógica dos eventos roda no servidor e funciona em mundos locais. |
 | 🏛️ **Integração opcional** | Com Raid Dens instalado, um resultado pode criar um Raid Den real. |
@@ -47,7 +48,7 @@
 ## Instalação
 
 1. Instale o **Fabric Loader** para Minecraft `1.21.1`.
-2. Coloque **Fabric API**, **Cobblemon** e `lucky-cobblemon-0.5.1.jar` na pasta `mods`.
+2. Coloque **Fabric API**, **Cobblemon** e `lucky-cobblemon-0.6.0.jar` na pasta `mods`.
 3. Se quiser Raid Dens reais como resultado, adicione também **Cobblemon Raid Dens**.
 4. Inicie o jogo. O arquivo `config/luckycobblemon.json` será criado automaticamente.
 
@@ -66,6 +67,27 @@ O = Barra de ouro
 P = Poké Bola
 E = Ejetor
 ```
+
+## Variantes
+
+<p align="center">
+  <img src="docs/media/variants/rare-lucky-block.png" alt="Bloco da Sorte Raro" width="180">
+  <img src="docs/media/variants/legendary-lucky-block.png" alt="Bloco da Sorte Lendário" width="180">
+  <img src="docs/media/variants/cursed-lucky-block.png" alt="Bloco da Sorte Amaldiçoado" width="180">
+</p>
+
+<p align="center">
+  <img src="docs/media/lucky-cobblemon-0.6-variants.png" alt="As quatro variantes renderizadas no Minecraft" width="900">
+</p>
+
+| Variante | Sorte-base | Progressão |
+| --- | ---: | --- |
+| Bloco da Sorte Cobblemon | 0 | Receita original com ouro, Poké Bolas e ejetor |
+| Bloco da Sorte Raro | +35 | Bloco comum, quatro diamantes e quatro fragmentos de ametista |
+| Bloco da Sorte Lendário | +75 | Bloco raro, quatro blocos de ouro, três varas de blaze e uma Estrela do Nether |
+| Bloco da Sorte Amaldiçoado | −65 | Bloco comum, quatro areias das almas e quatro olhos de aranha fermentados |
+
+Todas as variantes aceitam os modificadores da bancada e preservam o próprio tipo ao ajustar a sorte.
 
 ## Sistema de sorte
 
@@ -92,10 +114,12 @@ A sorte positiva reduz resultados comuns e aumenta as chances relativas de raros
 - Pokémon comuns, incomuns, raros, épicos, míticos e lendários;
 - chance de shiny em resultados especiais;
 - pacotes de Poké Bolas e Doces Raros;
-- encontro com três Pokémon;
-- Santuário da Sorte com guardião e suprimentos;
+- colheita de apricorns, piquenique de berries e pedras evolutivas;
+- kits de cura, tesouros minerais e fragmentos fósseis;
+- trios épicos, revoadas comuns, duplas raras e desfiles de iniciais;
+- Santuário da Sorte, Altar de Cristal e Jardim de Cura;
 - Raid Den real quando o mod opcional está disponível;
-- efeitos de azar inofensivos, como cegueira temporária ou batatas venenosas;
+- efeitos de azar não letais, como neblina, teias, fome, trovões, ouro falso ou batatas venenosas;
 - jackpot lendário shiny acompanhado de uma Master Ball.
 
 Sem Cobblemon Raid Dens, o evento correspondente vira diretamente um encontro raro. Nenhum comando inexistente é executado e nenhum aviso de erro é gerado. Se a criação de um Pokémon ou Raid Den falhar por outro motivo, o mod entrega uma recompensa alternativa.
@@ -142,7 +166,7 @@ No Windows:
 .\gradlew.bat build
 ```
 
-O JAR de distribuição será criado em `build/libs/lucky-cobblemon-0.5.1.jar`. O arquivo com `-sources` contém apenas o código-fonte e não deve ser instalado nem enviado como arquivo principal ao CurseForge.
+O JAR de distribuição será criado em `build/libs/lucky-cobblemon-0.6.0.jar`. O arquivo com `-sources` contém apenas o código-fonte e não deve ser instalado nem enviado como arquivo principal ao CurseForge.
 
 Para abrir um cliente de desenvolvimento completo, informe o JAR local do Cobblemon:
 
