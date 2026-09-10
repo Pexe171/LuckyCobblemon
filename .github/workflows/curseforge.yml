@@ -77,13 +77,21 @@ jobs:
               }
             }' > "$RUNNER_TEMP/curseforge-metadata.json"
 
-          RESPONSE="$(curl --fail-with-body \
+          HTTP_STATUS="$(curl --silent --show-error \
+            --output "$RUNNER_TEMP/curseforge-response.json" \
+            --write-out '%{http_code}' \
             -H "X-Api-Token: $CURSEFORGE_API_TOKEN" \
             -F "metadata=@$RUNNER_TEMP/curseforge-metadata.json;type=application/json" \
             -F "file=@$JAR;type=application/java-archive" \
             "https://minecraft.curseforge.com/api/projects/${CURSEFORGE_PROJECT_ID}/upload-file")"
 
-          FILE_ID="$(printf '%s' "$RESPONSE" | jq -r '.id')"
+          cat "$RUNNER_TEMP/curseforge-response.json"
+          if [[ "$HTTP_STATUS" != 2* ]]; then
+            echo "Upload recusado pelo CurseForge (HTTP $HTTP_STATUS)."
+            exit 1
+          fi
+
+          FILE_ID="$(jq -r '.id' "$RUNNER_TEMP/curseforge-response.json")"
           test "$FILE_ID" != "null"
           echo "Arquivo enviado ao CurseForge com ID $FILE_ID."
 
